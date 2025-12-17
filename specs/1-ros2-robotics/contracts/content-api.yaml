@@ -1,0 +1,68 @@
+# Content API Contract for ROS 2 Educational Module
+
+# Since this is primarily static educational content using Docusaurus,
+# the "contracts" are more about the structure and organization of content
+# rather than traditional API endpoints.
+
+openapi: 3.0.0
+info:
+  title: ROS 2 Educational Content API
+  version: 1.0.0
+  description: API contract for educational content delivery in ROS 2 robotics course
+
+paths:
+  /modules/ros2-fundamentals:
+    get:
+      summary: Get ROS 2 fundamentals module content
+      responses:
+        '200':
+          description: Module content with chapters and learning objectives
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  moduleId:
+                    type: string
+                    example: "ros2-fundamentals"
+                  title:
+                    type: string
+                    example: "ROS 2 Fundamentals for Physical AI"
+                  description:
+                    type: string
+                    example: "Core concepts of ROS 2 and its role in embodied intelligence"
+                  chapters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        chapterId:
+                          type: string
+                        title:
+                          type: string
+                        content:
+                          type: string
+                        duration:
+                          type: number
+                        learningOutcomes:
+                          type: array
+                          items:
+                            type: string
+
+  /modules/ros2-communication:
+    get:
+      summary: Get ROS 2 communication module content
+      responses:
+        '200':
+          description: Module content with chapters on nodes, topics, and services
+
+  /modules/urdf-modeling:
+    get:
+      summary: Get URDF modeling module content
+      responses:
+        '200':
+          description: Module content with chapters on links, joints, and frames
+
+# This contract represents the structure if the educational content
+# were to be served via an API, though for this project it will be
+# statically generated content using Docusaurus
