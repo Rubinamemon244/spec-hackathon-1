@@ -1,0 +1,104 @@
+# Content API Contract for Digital Twin Educational Module
+
+# This contract defines the educational content structure for the Digital Twin module
+# covering Gazebo physics simulation, Unity environments, and sensor simulation
+
+openapi: 3.0.0
+info:
+  title: Digital Twin Educational Content API
+  version: 1.0.0
+  description: API for accessing educational content about digital twins in robotics
+
+paths:
+  /content/digital-twin/introduction:
+    get:
+      summary: Get introduction to digital twin concepts
+      responses:
+        '200':
+          description: Introduction content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: "Digital Twin Concepts for Humanoid Robotics"
+                  content:
+                    type: string
+                    example: "A digital twin in robotics is a virtual replica of a physical robot..."
+                  learning_objectives:
+                    type: array
+                    items:
+                      type: string
+
+  /content/digital-twin/gazebo-physics:
+    get:
+      summary: Get Gazebo physics simulation content
+      responses:
+        '200':
+          description: Physics simulation content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: "Physics Simulation with Gazebo"
+                  content:
+                    type: string
+                    example: "Gazebo provides realistic physics simulation including gravity..."
+                  examples:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        scenario:
+                          type: string
+                        code:
+                          type: string
+
+  /content/digital-twin/unity-environments:
+    get:
+      summary: Get Unity environment content
+      responses:
+        '200':
+          description: Unity environment content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: "High-Fidelity Environments with Unity"
+                  content:
+                    type: string
+                    example: "Unity provides high-fidelity rendering for realistic environments..."
+                  examples:
+                    type: array
+                    items:
+                      type: object
+
+  /content/digital-twin/sensor-simulation:
+    get:
+      summary: Get sensor simulation content
+      responses:
+        '200':
+          description: Sensor simulation content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: "Sensor Simulation for Humanoid Robots"
+                  content:
+                    type: string
+                    example: "Sensor simulation includes LiDAR, depth cameras, and IMUs..."
+                  examples:
+                    type: array
+                    items:
+                      type: object

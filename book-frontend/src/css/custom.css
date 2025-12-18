@@ -1,0 +1,224 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #2563eb;
+  --ifm-color-primary-dark: #1d4ed8;
+  --ifm-color-primary-darker: #1e40af;
+  --ifm-color-primary-darkest: #1e3a8a;
+  --ifm-color-primary-light: #3b82f6;
+  --ifm-color-primary-lighter: #60a5fa;
+  --ifm-color-primary-lightest: #93c5fd;
+  --ifm-code-font-size: 95%;
+
+  /* Accessibility enhancements */
+  --ifm-color-emphasis-0: var(--ifm-color-gray-100);
+  --ifm-color-emphasis-100: var(--ifm-color-gray-200);
+  --ifm-color-emphasis-200: var(--ifm-color-gray-300);
+  --ifm-color-emphasis-300: var(--ifm-color-gray-400);
+  --ifm-color-emphasis-400: var(--ifm-color-gray-500);
+  --ifm-color-emphasis-500: var(--ifm-color-gray-600);
+  --ifm-color-emphasis-600: var(--ifm-color-gray-700);
+  --ifm-color-emphasis-700: var(--ifm-color-gray-800);
+  --ifm-color-emphasis-800: var(--ifm-color-gray-900);
+  --ifm-color-emphasis-900: var(--ifm-color-gray-900);
+  --ifm-color-emphasis-1000: var(--ifm-color-gray-900);
+}
+
+/* Custom styles for ROS 2 for Humanoid Robotics Education */
+/* Learning Objectives styling */
+.learning-objectives {
+  background-color: #f0f9ff;
+  border-left: 4px solid #3b82f6;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  border-radius: 0 0.25rem 0.25rem 0;
+  /* Accessibility: Ensure sufficient contrast */
+  color: #1e3a8a;
+}
+
+.learning-objectives h3 {
+  margin-top: 0;
+  color: #1d4ed8;
+}
+
+/* Code examples styling */
+.code-example {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.code-example pre {
+  margin: 0;
+  padding: 0.5rem;
+  background-color: #1e293b;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  /* Accessibility: Ensure sufficient contrast for code */
+  color: #f8fafc;
+}
+
+/* Summary boxes */
+.summary-box {
+  background-color: #fefce8;
+  border: 1px solid #fef9c3;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  /* Accessibility: Ensure sufficient contrast */
+  color: #854d0e;
+}
+
+.summary-box h3 {
+  color: #854d0e;
+  margin-top: 0;
+}
+
+/* Navigation links styling */
+.navigation-links {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.navigation-links a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  /* Accessibility: Provide focus indicator */
+  outline: none;
+}
+
+.navigation-links a:hover,
+.navigation-links a:focus {
+  text-decoration: underline;
+  /* Accessibility: Ensure focus indicator is visible */
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Related topics section */
+.related-topics {
+  background-color: #f1f5f9;
+  border-left: 4px solid #64748b;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  border-radius: 0 0.25rem 0.25rem 0;
+  /* Accessibility: Ensure sufficient contrast */
+  color: #334155;
+}
+
+.related-topics h3 {
+  margin-top: 0;
+  color: #334155;
+}
+
+/* Custom admonitions for robotics-specific content */
+.admonition.admonition-caution {
+  border-color: #f59e0b;
+  background-color: #fffbeb;
+  color: #92400e;
+}
+
+.admonition.admonition-warning {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Consistent heading styling */
+h2 {
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+  /* Accessibility: Ensure sufficient contrast */
+  color: #1e293b;
+}
+
+h3 {
+  color: #374151;
+  margin-top: 1.5rem;
+  /* Accessibility: Ensure sufficient contrast */
+  color: #1e293b;
+}
+
+/* Consistent code block styling */
+.code-block {
+  background-color: #f1f5f9;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+}
+
+/* Accessibility improvements for focus management */
+*:focus {
+  /* Ensure all focusable elements have a visible focus indicator */
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Improve accessibility for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+  .learning-objectives,
+  .summary-box,
+  .related-topics {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Accessibility: Ensure touch targets are large enough */
+  a,
+  button,
+  input {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --ifm-color-emphasis-0: #ffffff;
+    --ifm-color-emphasis-1000: #000000;
+  }
+
+  .learning-objectives,
+  .summary-box,
+  .related-topics {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
