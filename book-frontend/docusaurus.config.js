@@ -125,6 +125,10 @@ const config = {
                 label: 'Digital Twin (Gazebo & Unity)',
                 to: '/docs/module-2-digital-twin',
               },
+              {
+                label: 'AI-Robot Brain (NVIDIA Isaac)',
+                to: '/docs/module-2-digital-twin/nvidia-isaac-sim-fundamentals',
+              },
             ],
           },
           {

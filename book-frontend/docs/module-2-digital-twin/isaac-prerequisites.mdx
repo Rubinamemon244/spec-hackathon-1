@@ -1,0 +1,63 @@
+# Prerequisites and System Requirements for NVIDIA Isaac Educational Module
+
+## Hardware Requirements
+
+- Computer with NVIDIA GPU (RTX series recommended)
+- At least 16GB RAM (32GB recommended)
+- Sufficient storage space for Isaac Sim and ROS2 installations
+- Compatible CPU for running Isaac Sim and ROS2 workloads
+
+## Software Requirements
+
+- Ubuntu 22.04 LTS or Windows with WSL2
+- ROS2 Humble Hawksbill
+- NVIDIA Isaac Sim 2023.1+
+- Isaac ROS packages
+- Nav2 navigation stack
+- Docker (optional but recommended for consistent environments)
+
+## System Setup
+
+1. Install NVIDIA GPU drivers appropriate for your hardware
+2. Set up ROS2 Humble environment
+3. Verify CUDA installation and GPU access
+4. Ensure sufficient disk space for simulation assets
+
+## Installation Steps
+
+### 1. Install Isaac Sim
+- Download Isaac Sim from NVIDIA Developer website
+- Follow installation guide for your platform
+- Verify installation by launching Isaac Sim
+
+### 2. Set up Isaac ROS
+- Clone Isaac ROS workspace from the official repository
+- Follow build instructions in the repository
+
+### 3. Install Nav2
+- Install Nav2 via apt or build from source
+- Verify Nav2 installation with basic navigation demo
+
+## Troubleshooting Common Issues
+
+### Isaac Sim Performance
+- Reduce rendering quality settings for better performance
+- Ensure GPU has sufficient VRAM for the scene complexity
+- Close other GPU-intensive applications
+
+### ROS2 Connection Issues
+- Verify ROS_DOMAIN_ID is consistent across all terminals
+- Check network configuration for multi-machine setups
+- Ensure all packages are properly sourced
+
+### Isaac ROS Nodes Not Responding
+- Verify GPU compatibility with Isaac ROS packages
+- Check CUDA version compatibility
+- Ensure Isaac Sim and ROS2 are properly connected
+
+## Performance Benchmarks
+
+### Expected Performance Metrics
+- Isaac Sim: 30+ FPS for basic scenes
+- VSLAM: 10+ FPS with GPU acceleration vs 2-3 FPS CPU-only
+- Navigation: Sub-second path planning for simple environments

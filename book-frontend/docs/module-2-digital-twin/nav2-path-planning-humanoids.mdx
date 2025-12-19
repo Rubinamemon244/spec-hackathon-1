@@ -1,0 +1,619 @@
+---
+sidebar_position: 3
+title: "Nav2 Path Planning for Humanoid Robots"
+description: "Learn navigation basics using Nav2 for humanoid robots, focusing on path planning and movement fundamentals"
+---
+
+# Nav2 Path Planning for Humanoid Robots
+
+## Introduction
+
+This chapter covers navigation using Nav2, the standard navigation framework for ROS2. You'll learn how to configure Nav2 specifically for humanoid robots and implement path planning algorithms that work with the perception data generated in previous modules.
+
+## Learning Objectives
+
+By the end of this chapter, you will be able to:
+- Understand Nav2 architecture and humanoid-specific configurations
+- Set up Nav2 with Isaac Sim integration
+- Implement path planning algorithms for humanoid robots
+- Configure obstacle avoidance for dynamic environments
+- Tune Nav2 parameters for different scenarios
+
+## Nav2 Architecture
+
+Nav2 is the navigation stack for ROS2, providing comprehensive path planning, obstacle avoidance, and locomotion control capabilities. When adapted for humanoid robots, it must account for complex kinematics and locomotion patterns.
+
+### Core Components
+
+Nav2 consists of several key components that work together:
+
+1. **Navigation Server**: Main orchestrator that coordinates navigation tasks
+2. **Planner Server**: Handles global path planning
+3. **Controller Server**: Manages local path following and obstacle avoidance
+4. **Recovery Server**: Provides recovery behaviors when navigation fails
+5. **Lifecycle Manager**: Manages the lifecycle of navigation components
+
+### Navigation System Architecture
+
+```
+Navigation Server
+├── Planner Server (Global Planner)
+├── Controller Server (Local Planner)
+├── Recovery Server
+└── BT Navigator (Behavior Tree-based execution)
+```
+
+Each component can be configured independently, allowing for customization based on robot capabilities and requirements.
+
+## Nav2 Setup with Isaac Sim
+
+Integrating Nav2 with Isaac Sim requires specific configurations to work with simulated humanoid robots. The integration involves connecting the simulation environment with the navigation system.
+
+### Configuration Steps
+
+1. **Map Server Setup**: Configure map loading for the simulated environment
+2. **Localization**: Set up robot localization in the known map
+3. **Costmap Configuration**: Configure local and global costmaps for obstacle detection
+4. **Robot Configuration**: Define robot footprint and kinematic constraints
+
+```yaml
+# Example Nav2 configuration for humanoid robot
+amcl:
+  ros__parameters:
+    use_sim_time: True
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+    base_frame_id: "base_link"
+    beam_skip_distance: 0.5
+    beam_skip_error_threshold: 0.9
+    beam_skip_threshold: 0.3
+    do_beamskip: false
+    global_frame_id: "map"
+    lambda_short: 0.1
+    laser_likelihood_max_dist: 2.0
+    laser_max_range: 100.0
+    laser_min_range: -1.0
+    laser_model_type: "likelihood_field"
+    max_beams: 60
+    max_particles: 2000
+    min_particles: 500
+    odom_frame_id: "odom"
+    pf_err: 0.05
+    pf_z: 0.5
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
+    resample_interval: 1
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    save_pose_rate: 0.5
+    sigma_hit: 0.2
+    tf_broadcast: true
+    transform_tolerance: 1.0
+    update_min_a: 0.2
+    update_min_d: 0.25
+    z_hit: 0.5
+    z_max: 0.05
+    z_rand: 0.5
+    z_short: 0.05
+```
+
+### Isaac Sim Integration
+
+To integrate Nav2 with Isaac Sim:
+
+1. **Publish TF transforms**: Ensure proper coordinate frame relationships
+2. **Sensor data bridging**: Connect Isaac Sim sensors to Nav2 costmaps
+3. **Robot state publishing**: Publish odometry and joint states
+4. **Goal publishing**: Send navigation goals from Isaac Sim interface
+
+```python
+# Example of Nav2 goal publishing from Isaac Sim
+from geometry_msgs.msg import PoseStamped
+from nav2_msgs.action import NavigateToPose
+import rclpy.action
+
+class IsaacNav2Bridge:
+    def __init__(self):
+        self.action_client = rclpy.action.ActionClient(
+            self, NavigateToPose, 'navigate_to_pose')
+
+    def send_navigation_goal(self, x, y, theta):
+        goal_msg = NavigateToPose.Goal()
+        goal_msg.pose.header.frame_id = 'map'
+        goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
+        goal_msg.pose.pose.position.x = x
+        goal_msg.pose.pose.position.y = y
+        goal_msg.pose.pose.orientation.z = math.sin(theta / 2.0)
+        goal_msg.pose.pose.orientation.w = math.cos(theta / 2.0)
+
+        self.action_client.wait_for_server()
+        future = self.action_client.send_goal_async(goal_msg)
+        return future
+```
+
+## Path Planning Algorithms
+
+Nav2 implements several path planning algorithms suitable for different scenarios. For humanoid robots, specific algorithms may be more appropriate due to their unique kinematics.
+
+### Global Path Planning Algorithms
+
+1. **NavFn**: Traditional Dijkstra-based planner
+2. **Global Planner**: A* implementation
+3. **Theta* Planner**: Any-angle path planning
+4. **SMAC Planner**: State lattice-based planner for smooth paths
+
+### Local Path Planning Algorithms
+
+1. **DWB Controller**: Dynamic Window Approach for local planning
+2. **Teb Local Planner**: Timed Elastic Band for smooth trajectories
+3. **Smoother**: Path smoothing algorithms
+
+### Humanoid-Specific Path Planning Considerations
+
+Humanoid robots require special considerations for path planning:
+
+- **Step constraints**: Navigation paths must account for step height limitations
+- **Balance requirements**: Paths should maintain robot stability
+- **Foot placement**: Consider where feet can be placed safely
+- **Center of Mass**: Path planning should maintain balance during movement
+
+```yaml
+# Humanoid-specific global planner configuration
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      use_sim_time: True
+      rolling_window: false
+      width: 20
+      height: 20
+      resolution: 0.05
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /laser_scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55
+      always_send_full_costmap: True
+```
+
+## Humanoid-Specific Navigation
+
+Humanoid robots present unique challenges for navigation due to their complex kinematics and locomotion patterns. These challenges require specialized approaches to path planning and navigation.
+
+### Challenges and Solutions
+
+#### Balance and Stability
+- **Challenge**: Humanoid robots must maintain balance during navigation
+- **Solution**: Plan paths with wider safety margins and slower movement profiles
+
+#### Step Height Limitations
+- **Challenge**: Humanoid robots can only step over obstacles up to a certain height
+- **Solution**: Use 3D costmaps that account for obstacle height
+
+#### Dynamic Obstacle Avoidance
+- **Challenge**: Humanoid robots have slower reaction times than wheeled robots
+- **Solution**: Use predictive obstacle avoidance with longer look-ahead distances
+
+#### Footstep Planning
+- **Challenge**: Humanoid robots need to plan where to place each foot
+- **Solution**: Integrate footstep planning with navigation planning
+
+### Humanoid Navigation Configuration
+
+```yaml
+# Humanoid-specific navigation parameters
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    controller_frequency: 10.0
+    min_x_velocity_threshold: 0.05
+    min_y_velocity_threshold: 0.05
+    min_theta_velocity_threshold: 0.05
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugin: "goal_checker"
+    controller_plugins: ["FollowPath"]
+
+    # Humanoid-specific controller parameters
+    FollowPath:
+      plugin: "nav2_mppi_controller::MppiController"
+      time_steps: 20
+      control_freq: 10
+      horizon: 2.0
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+      state_bounds_x: [0.0, 0.5]
+      state_bounds_y: [-0.5, 0.5]
+      state_bounds_theta: [-1.0, 1.0]
+      control_bounds_ax: [-2.0, 0.5]
+      control_bounds_ay: [-0.5, 0.5]
+      control_bounds_atheta: [-0.5, 0.5]
+      costmap_topic: "local_costmap/costmap_raw"
+      costmap_updates_topic: "local_costmap/costmap_updates"
+      path_topic: "global_costmap/costmap_raw"
+      odom_topic: "odom"
+      velocity_scaling: True
+      max_scaling_vel: 0.25
+```
+
+## Obstacle Avoidance
+
+Dynamic obstacle avoidance is crucial for humanoid robots operating in real-world environments. The approach differs from wheeled robots due to the humanoid's unique movement capabilities.
+
+### Implementation Strategies
+
+#### Local Costmap Configuration
+Configure local costmaps for humanoid-specific obstacle detection:
+
+```yaml
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom
+      robot_base_frame: base_link
+      use_sim_time: True
+      rolling_window: true
+      width: 6
+      height: 6
+      resolution: 0.05
+      plugins: ["obstacle_layer", "voxel_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /laser_scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.2
+        z_voxels: 8
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: pointcloud
+        pointcloud:
+          topic: /point_cloud
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "PointCloud2"
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55
+      always_send_full_costmap: True
+```
+
+#### Dynamic Obstacle Prediction
+For humanoid robots, consider the prediction of moving obstacles:
+
+```python
+# Example of dynamic obstacle handling for humanoid robots
+class HumanoidObstaclePredictor:
+    def __init__(self):
+        self.obstacle_history = {}
+        self.prediction_horizon = 2.0  # seconds
+
+    def predict_obstacle_motion(self, obstacle_id, current_pose, timestamp):
+        if obstacle_id not in self.obstacle_history:
+            self.obstacle_history[obstacle_id] = []
+
+        self.obstacle_history[obstacle_id].append((current_pose, timestamp))
+
+        # Keep only recent history
+        recent_time = timestamp - 1.0  # Keep 1 second of history
+        self.obstacle_history[obstacle_id] = [
+            (pose, time) for pose, time in self.obstacle_history[obstacle_id]
+            if time > recent_time
+        ]
+
+        # Calculate velocity and predict future position
+        if len(self.obstacle_history[obstacle_id]) > 1:
+            prev_pose, prev_time = self.obstacle_history[obstacle_id][0]
+            current_pose, current_time = self.obstacle_history[obstacle_id][-1]
+
+            dt = current_time - prev_time
+            if dt > 0:
+                velocity = (current_pose.position.x - prev_pose.position.x) / dt
+                # Predict position at prediction_horizon seconds
+                predicted_x = current_pose.position.x + velocity * self.prediction_horizon
+                return predicted_x
+        return current_pose.position.x
+```
+
+## Parameter Tuning
+
+Nav2 provides numerous parameters that can be tuned for specific robot configurations and environments. For humanoid robots, careful parameter tuning is essential for safe and effective navigation.
+
+### Tuning Guidelines
+
+#### Safety Parameters
+- **Inflation radius**: Increase for humanoid robots to provide wider safety margins
+- **XY goal tolerance**: Adjust based on required positioning accuracy
+- **Yaw goal tolerance**: Consider robot's ability to achieve precise orientations
+
+#### Performance Parameters
+- **Controller frequency**: Balance between responsiveness and computational load
+- **Costmap resolution**: Higher resolution for more precise navigation but increased computation
+- **Look-ahead distance**: Adjust based on robot's reaction time and speed
+
+#### Humanoid-Specific Parameters
+- **Step height**: Configure based on robot's physical limitations
+- **Balance constraints**: Set appropriate stability margins
+- **Footstep planning**: Enable if integrated with navigation system
+
+```yaml
+# Example parameter tuning for humanoid navigation
+bt_navigator:
+  ros__parameters:
+    use_sim_time: True
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /odom
+    default_bt_xml_filename: "navigate_w_replanning_and_recovery.xml"
+    plugin_lib_names:
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_back_up_action_bt_node
+      - nav2_spin_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_clear_costmap_service_bt_node
+      - nav2_is_stuck_condition_bt_node
+      - nav2_goal_reached_condition_bt_node
+      - nav2_goal_updated_condition_bt_node
+      - nav2_initial_pose_received_condition_bt_node
+      - nav2_reinitialize_global_localization_service_bt_node
+      - nav2_rate_controller_bt_node
+      - nav2_distance_controller_bt_node
+      - nav2_speed_controller_bt_node
+      - nav2_truncate_path_action_bt_node
+      - nav2_goal_updater_node_bt_node
+      - nav2_recovery_node_bt_node
+      - nav2_pipeline_sequence_bt_node
+      - nav2_round_robin_node_bt_node
+      - nav2_transform_available_condition_bt_node
+      - nav2_time_expired_condition_bt_node
+      - nav2_path_expiring_timer_condition
+      - nav2_distance_traveled_condition_bt_node
+      - nav2_single_trigger_bt_node
+      - nav2_is_battery_low_condition_bt_node
+      - nav2_navigate_through_poses_action_bt_node
+      - nav2_navigate_to_pose_action_bt_node
+      - nav2_remove_passed_goals_action_bt_node
+      - nav2_planner_selector_bt_node
+      - nav2_controller_selector_bt_node
+      - nav2_goal_checker_selector_bt_node
+      - nav2_controller_cancel_bt_node
+      - nav2_path_longer_on_approach_bt_node
+      - nav2_wait_cancel_bt_node
+```
+
+## Practical Exercise: Humanoid Navigation in Isaac Sim
+
+Let's implement a complete navigation system for a humanoid robot in Isaac Sim:
+
+### Exercise Goals
+- Set up Nav2 navigation stack for a humanoid robot
+- Integrate with Isaac Sim environment
+- Plan and execute navigation in dynamic environments
+- Evaluate navigation performance and safety
+
+### Step 1: Environment Setup
+Create a simulation environment with obstacles and navigation goals:
+
+```bash
+# Launch Isaac Sim with humanoid robot and Nav2
+# Configure the environment with static and dynamic obstacles
+```
+
+### Step 2: Nav2 Configuration
+Configure Nav2 for humanoid-specific navigation:
+
+```python
+# Example launch file for humanoid navigation
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from nav2_common.launch import RewrittenYaml
+import os
+
+def generate_launch_description():
+    param_file = os.path.join(
+        get_package_share_directory('isaac_nav2_examples'),
+        'config',
+        'humanoid_nav2_params.yaml'
+    )
+
+    return LaunchDescription([
+        Node(
+            package='nav2_map_server',
+            executable='map_server',
+            name='map_server',
+            parameters=[param_file]
+        ),
+        Node(
+            package='nav2_localizer',
+            executable='amcl',
+            name='amcl',
+            parameters=[param_file]
+        ),
+        Node(
+            package='nav2_planner',
+            executable='planner_server',
+            name='planner_server',
+            parameters=[param_file]
+        ),
+        Node(
+            package='nav2_controller',
+            executable='controller_server',
+            name='controller_server',
+            parameters=[param_file]
+        ),
+        Node(
+            package='nav2_behaviors',
+            executable='bt_navigator',
+            name='bt_navigator',
+            parameters=[param_file]
+        )
+    ])
+```
+
+### Step 3: Navigation Execution
+Execute navigation and evaluate results:
+
+```python
+# Example navigation execution code
+class HumanoidNavigator:
+    def __init__(self):
+        self.navigator = BasicNavigator()
+
+    def navigate_to_pose(self, x, y, theta):
+        goal_pose = PoseStamped()
+        goal_pose.header.frame_id = 'map'
+        goal_pose.header.stamp = self.navigator.get_clock().now().to_msg()
+        goal_pose.pose.position.x = x
+        goal_pose.pose.position.y = y
+        goal_pose.pose.orientation.z = math.sin(theta / 2.0)
+        goal_pose.pose.orientation.w = math.cos(theta / 2.0)
+
+        self.navigator.goToPose(goal_pose)
+
+        while not self.navigator.isTaskComplete():
+            feedback = self.navigator.getFeedback()
+            if feedback:
+                print(f"Distance remaining: {feedback.distance_remaining}")
+
+        result = self.navigator.getResult()
+        return result
+```
+
+## Performance Evaluation
+
+Evaluating navigation performance for humanoid robots requires specific metrics:
+
+### Key Metrics
+- **Success Rate**: Percentage of goals reached successfully
+- **Path Efficiency**: Ratio of actual path length to optimal path
+- **Navigation Time**: Time to reach the goal
+- **Safety Margin**: Minimum distance maintained from obstacles
+- **Balance Maintenance**: How well the robot maintains stability
+
+### Evaluation Tools
+Nav2 provides tools for evaluating navigation performance:
+
+```bash
+# Evaluate navigation performance
+ros2 run nav2_system_tests navigation_performance --params-file config/humanoid_params.yaml
+```
+
+## Troubleshooting Navigation Issues
+
+Common navigation problems and solutions for humanoid robots:
+
+### Local Minima Problems
+- **Problem**: Robot gets stuck in local minima
+- **Solution**: Increase exploration radius or use more sophisticated planners
+
+### Kinematic Constraints Violations
+- **Problem**: Planned paths violate robot's kinematic constraints
+- **Solution**: Use kinematically-aware planners or adjust costmaps
+
+### Dynamic Obstacle Collisions
+- **Problem**: Robot collides with moving obstacles
+- **Solution**: Improve obstacle prediction or increase safety margins
+
+### Balance Loss During Navigation
+- **Problem**: Robot loses balance while following path
+- **Solution**: Slow down navigation speed or adjust path smoothing
+
+## Self-Assessment
+
+Complete these self-assessment questions to test your understanding of Nav2 navigation for humanoid robots:
+
+1. What are the key differences between wheeled and humanoid robot navigation?
+2. How do you configure Nav2 for a humanoid robot in Isaac Sim?
+3. What parameters are most important for humanoid navigation performance?
+4. How does obstacle avoidance differ for humanoid robots compared to wheeled robots?
+5. What are the key components of the Nav2 architecture and their roles?
+
+<details>
+<summary>Self-Assessment Answers</summary>
+
+1. Key differences include: humanoid robots have balance constraints requiring wider safety margins, step height limitations affecting obstacle navigation, different kinematic constraints, and slower reaction times requiring predictive obstacle avoidance.
+
+2. To configure Nav2 for humanoid robots in Isaac Sim: set up proper TF transforms, configure costmaps with humanoid-specific parameters, adjust controller parameters for balance constraints, and integrate with Isaac Sim's sensor data and robot state publishing.
+
+3. Important parameters include: inflation radius (wider for safety), controller frequencies (adjusted for balance), goal tolerances (based on robot capabilities), and costmap resolution (for precise navigation).
+
+4. Obstacle avoidance for humanoid robots differs by requiring: wider safety margins due to balance constraints, 3D costmaps for step height limitations, predictive algorithms due to slower reaction times, and consideration of footstep planning.
+
+5. Key Nav2 components are: Navigation Server (main orchestrator), Planner Server (global path planning), Controller Server (local path following), Recovery Server (failure recovery), and BT Navigator (behavior tree execution).
+
+</details>
+
+## Conclusion
+
+Congratulations! You've completed the NVIDIA Isaac educational module. You now understand:
+- Isaac Sim fundamentals for simulation and synthetic data generation
+- Isaac ROS for hardware-accelerated perception and VSLAM
+- Nav2 for navigation and path planning on humanoid robots
+
+These skills form the foundation for advanced robotics development using NVIDIA's AI robotics platform. With this knowledge, you can:
+- Create realistic simulation environments for robot testing
+- Implement perception systems with GPU acceleration
+- Navigate humanoid robots safely through complex environments
+- Integrate simulation and real-world robotics systems
+
+## Chapter Navigation
+
+- **Previous**: [Isaac ROS for VSLAM and Navigation](./isaac-ros-vslam-navigation)
+- **Next**: [Integrated Project: Complete Humanoid Robot System](./nvidia-isaac-integrated-project)
+- **Module Summary**: [NVIDIA Isaac Module Summary](./nvidia-isaac-module-summary)
+
+## Cross-References to Related Concepts
+
+### Related to Isaac Sim Concepts
+- **Simulation Environment**: Nav2 navigation is tested and validated in Isaac Sim environments [→ Isaac Sim Environments](./nvidia-isaac-sim-fundamentals#basic-scene-creation)
+- **Sensor Integration**: Nav2 uses sensors configured in Isaac Sim [→ Isaac Sim Sensors](./nvidia-isaac-sim-fundamentals#camera-sensor-configuration)
+- **Physics Simulation**: Understanding physics properties is important for navigation planning [→ Isaac Sim Physics](./nvidia-isaac-sim-fundamentals#physics-simulation-examples)
+
+### Related to Isaac ROS Concepts
+- **Perception Integration**: Nav2 uses perception data from Isaac ROS nodes [→ Isaac ROS Perception](./isaac-ros-vslam-navigation#isaac-ros-perception)
+- **VSLAM Localization**: Nav2 uses VSLAM data for robot localization [→ Isaac ROS VSLAM](./isaac-ros-vslam-navigation#vslam-with-isaac-ros)
+- **Sensor Data Processing**: Isaac ROS processes sensor data that feeds into Nav2 navigation [→ Isaac ROS Bridge](./isaac-ros-vslam-navigation#isaac-ros-bridge)
+
+### Related to Integrated Concepts
+- **Complete Pipeline**: See how all components work together [→ Integrated Project](./nvidia-isaac-integrated-project)
+- **Performance Considerations**: How all components interact for optimal performance [→ Performance Evaluation](./nvidia-isaac-integrated-project#performance-evaluation)
+
+## Next Steps
+
+After completing this module, consider exploring:
+- Advanced Isaac ROS packages for specialized perception tasks
+- Custom behavior trees for complex navigation scenarios
+- Integration with AI and machine learning systems
+- Real-world deployment of simulation-trained algorithms

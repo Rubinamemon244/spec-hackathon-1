@@ -1,0 +1,237 @@
+# Comprehensive Troubleshooting Guide: NVIDIA Isaac Platform
+
+## Overview
+
+This guide consolidates troubleshooting information for the complete NVIDIA Isaac platform, including Isaac Sim, Isaac ROS, and Nav2. Use this as a reference when you encounter issues during development and deployment.
+
+## Troubleshooting Categories
+
+### 1. Performance and Hardware Issues
+
+#### Isaac Sim Performance Issues
+- **Problem**: Isaac Sim runs slowly or with low frame rates
+- **Solutions**:
+  - Reduce scene complexity and polygon counts
+  - Check that Isaac Sim is using the dedicated GPU (especially on laptops with dual GPUs)
+  - Close other GPU-intensive applications
+  - Optimize textures and use LOD systems
+  - Monitor GPU memory usage with `nvidia-smi`
+
+#### Isaac ROS Performance Issues
+- **Problem**: Lower than expected performance from Isaac ROS nodes
+- **Solutions**:
+  - Verify GPU compatibility and CUDA installation: `nvidia-smi`
+  - Check CUDA version compatibility with Isaac ROS packages
+  - Verify Isaac ROS packages are properly installed
+  - Monitor GPU utilization during processing
+
+#### Nav2 Performance Issues
+- **Problem**: Slow path planning or navigation updates
+- **Solutions**:
+  - Optimize costmap resolution and update frequencies
+  - Check CPU and memory usage
+  - Verify TF tree integrity
+  - Adjust controller and planner update rates
+
+### 2. Installation and Setup Issues
+
+#### Isaac Sim Installation Problems
+- **Problem**: Isaac Sim won't launch
+- **Solutions**:
+  - Check system requirements and graphics drivers
+  - Verify installation integrity
+  - Ensure sufficient disk space
+  - Check for conflicting applications
+
+#### Isaac ROS Package Installation Issues
+- **Problem**: Isaac ROS packages not found or not working
+- **Solutions**:
+  - Verify ROS2 distribution compatibility
+  - Check package installation: `apt list --installed | grep isaac-ros`
+  - Source ROS2 workspace: `source /opt/ros/humble/setup.bash`
+  - Verify Isaac ROS packages: `ros2 pkg list | grep isaac`
+
+#### Nav2 Installation Issues
+- **Problem**: Nav2 components not available
+- **Solutions**:
+  - Install Nav2 packages: `sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup`
+  - Source ROS2 environment
+  - Check for dependency issues
+
+### 3. Communication and Integration Issues
+
+#### Isaac ROS Bridge Connection Problems
+- **Problem**: Isaac Sim and ROS2 not communicating
+- **Solutions**:
+  - Verify network configuration and topic names
+  - Use `ros2 topic list` to verify topics
+  - Check ROS_DOMAIN_ID consistency across terminals
+  - Verify Isaac Sim ROS bridge extension is enabled
+
+#### Sensor Data Issues
+- **Problem**: Sensors not publishing data or data is incorrect
+- **Solutions**:
+  - Check sensor configuration and ROS bridge connection
+  - Verify topic names and message types
+  - Check TF transforms between sensor and robot frames
+  - Ensure proper sensor mounting position on the robot
+
+#### Navigation Communication Issues
+- **Problem**: Nav2 not receiving sensor data or not publishing commands
+- **Solutions**:
+  - Verify costmap topics are being published
+  - Check TF tree with `ros2 run tf2_tools view_frames`
+  - Verify Nav2 configuration parameters
+  - Check robot state publisher
+
+### 4. Runtime and Execution Issues
+
+#### Isaac Sim Runtime Problems
+- **Problem**: Objects falling through surfaces, unstable simulation
+- **Solutions**:
+  - Check collision properties and physics materials
+  - Reduce physics step size or increase substeps
+  - Verify physics properties are set on objects
+  - Check for object penetration at initialization
+
+#### Isaac ROS Node Issues
+- **Problem**: Isaac ROS nodes fail to launch or crash
+- **Solutions**:
+  - Verify GPU compatibility and CUDA installation
+  - Check Isaac ROS package dependencies
+  - Verify proper camera/sensor configuration
+  - Check for memory allocation issues
+
+#### Nav2 Navigation Problems
+- **Problem**: Navigation fails to plan paths or robot doesn't follow planned paths
+- **Solutions**:
+  - Check costmap parameters and sensor data
+  - Verify transform frames are properly published
+  - Check Nav2 logs for specific error messages
+  - Use RViz to visualize costmaps and planned paths
+
+### 5. Configuration and Parameter Issues
+
+#### Isaac Sim Configuration Problems
+- **Problem**: Scene objects not appearing or behaving incorrectly
+- **Solutions**:
+  - Check visibility settings and layer visibility
+  - Verify object positioning and coordinate systems
+  - Check lighting and material properties
+  - Verify physics properties are enabled
+
+#### Isaac ROS Parameter Issues
+- **Problem**: Perception results are inaccurate or unexpected
+- **Solutions**:
+  - Verify camera calibration parameters
+  - Check sensor configuration and mounting
+  - Validate image resolution and format
+  - Check algorithm-specific parameters
+
+#### Nav2 Parameter Tuning Issues
+- **Problem**: Navigation behavior is suboptimal
+- **Solutions**:
+  - Review inflation radius for safety margins
+  - Adjust controller and planner frequencies
+  - Tune costmap parameters for the environment
+  - Verify robot footprint configuration
+
+## Diagnostic Commands
+
+### System Health Checks
+```bash
+# Check GPU status
+nvidia-smi
+
+# Check Isaac Sim logs
+# Look in ~/.nvidia-omniverse/logs/
+
+# Check ROS2 nodes
+ros2 node list
+
+# Check ROS2 topics
+ros2 topic list
+
+# Check TF tree
+ros2 run tf2_tools view_frames
+```
+
+### Isaac ROS Specific Diagnostics
+```bash
+# Check Isaac ROS nodes specifically
+ros2 node list | grep isaac
+
+# Monitor Isaac ROS topics
+ros2 topic list | grep -E "(isaac|slam|stereo)"
+
+# Check Isaac ROS parameters
+ros2 param list
+```
+
+### Nav2 Specific Diagnostics
+```bash
+# Check Nav2 server status
+ros2 service list | grep nav
+
+# Check Nav2 action servers
+ros2 action list
+
+# Monitor Nav2 topics
+ros2 topic list | grep nav
+```
+
+## Best Practices for Avoiding Issues
+
+### Development Environment
+- Always source your ROS2 workspace before launching Isaac tools
+- Use consistent ROS_DOMAIN_ID across all terminals
+- Keep Isaac Sim and ROS2 versions compatible
+- Monitor system resources during development
+
+### Configuration Management
+- Use version control for configuration files
+- Test components independently before integration
+- Document working configurations
+- Use parameter files for consistent setups
+
+### Performance Monitoring
+- Monitor GPU utilization during Isaac ROS operations
+- Track frame rates in Isaac Sim
+- Check navigation update rates in Nav2
+- Profile memory usage across the entire system
+
+## Getting Help
+
+If you encounter issues not covered in this guide:
+
+1. Check the [NVIDIA Isaac documentation](https://nvidia-isaac-ros.github.io/)
+2. Search the [ROS answers forum](https://answers.ros.org/)
+3. Review the Isaac ROS GitHub repositories for known issues
+4. Ensure all software components are at recommended versions
+
+## Issue Reporting Template
+
+When reporting issues, include:
+- Isaac Sim version
+- ROS2 distribution and version
+- Isaac ROS package versions
+- Nav2 version
+- Hardware specifications (GPU, CPU, RAM)
+- Error messages or logs
+- Steps to reproduce the issue
+- Expected vs. actual behavior
+
+## Quick Reference
+
+### Common Error Messages
+- `CUDA error`: GPU or driver issue - check `nvidia-smi`
+- `Topic not found`: Communication issue - check ROS bridge
+- `TF error`: Coordinate frame issue - check TF tree
+- `Memory allocation failed`: Insufficient GPU memory
+- `Failed to initialize`: Missing dependencies or configuration
+
+### Quick Fixes
+- Restart ROS2 daemon: `ros2 daemon stop && ros2 daemon start`
+- Clear Nav2 costmaps: `ros2 service call /clear_costmap_global std_srvs/srv/Empty`
+- Check Isaac Sim extensions in extension manager
+- Verify all required nodes are running

@@ -1,0 +1,130 @@
+# Isaac Troubleshooting Guide
+
+## Overview
+
+This guide provides solutions to common issues encountered when working with NVIDIA Isaac Sim, Isaac ROS, and Nav2. Use this as a reference when you encounter problems during the tutorials.
+
+## Common Issues and Solutions
+
+### Isaac Sim Performance Issues
+
+**Problem**: Isaac Sim runs slowly or with low frame rates.
+
+**Solutions**:
+1. Reduce rendering quality settings in Isaac Sim
+2. Ensure GPU has sufficient VRAM for the scene complexity
+3. Close other GPU-intensive applications
+4. Check that Isaac Sim is using the correct GPU (especially on laptops with dual GPUs)
+
+**Diagnostic Steps**:
+- Monitor GPU utilization during simulation
+- Check system memory usage
+- Verify Isaac Sim is running on the dedicated GPU
+
+### ROS2 Connection Issues
+
+**Problem**: ROS2 nodes cannot communicate properly or lose connection.
+
+**Solutions**:
+1. Verify ROS_DOMAIN_ID is consistent across all terminals
+2. Check network configuration for multi-machine setups
+3. Ensure all packages are properly sourced in each terminal
+4. Restart the ROS2 daemon if necessary: `ros2 daemon stop && ros2 daemon start`
+
+**Diagnostic Steps**:
+- Run `ros2 topic list` to see available topics
+- Use `ros2 node list` to check for running nodes
+- Verify ROS2 environment variables are set correctly
+
+### Isaac ROS Nodes Not Responding
+
+**Problem**: Isaac ROS perception nodes don't respond or produce output.
+
+**Solutions**:
+1. Verify GPU compatibility with Isaac ROS packages
+2. Check CUDA version compatibility (Isaac ROS requires specific CUDA versions)
+3. Ensure Isaac Sim and ROS2 are properly connected via the bridge
+4. Verify Isaac ROS packages are installed correctly
+
+**Diagnostic Steps**:
+- Check Isaac ROS node logs for error messages
+- Verify GPU is accessible and drivers are up to date
+- Test basic ROS2 functionality independently
+
+### Nav2 Navigation Issues
+
+**Problem**: Navigation fails to plan paths or robot doesn't follow planned paths.
+
+**Solutions**:
+1. Verify costmap parameters are configured correctly
+2. Check that transform frames are properly published
+3. Ensure sensor data is being received by Nav2 nodes
+4. Verify robot footprint is configured correctly
+
+**Diagnostic Steps**:
+- Use RViz to visualize costmaps and planned paths
+- Check TF tree with `ros2 run tf2_tools view_frames`
+- Monitor Nav2 logs for specific error messages
+
+### Sensor Data Issues
+
+**Problem**: Sensors in Isaac Sim don't publish data or data is incorrect.
+
+**Solutions**:
+1. Verify sensor is properly configured in USD scene
+2. Check that sensor topics are being published
+3. Ensure Isaac Sim ROS bridge is properly configured
+4. Verify sensor frame transformations
+
+**Diagnostic Steps**:
+- Use `ros2 topic echo` to check sensor data
+- Verify sensor parameters in the USD file
+- Check Isaac Sim console for sensor errors
+
+## Performance Optimization
+
+### Isaac Sim Optimization
+
+- Use Level of Detail (LOD) for complex objects
+- Reduce texture resolution for distant objects
+- Limit physics simulation to necessary objects
+- Use occlusion culling where appropriate
+
+### Isaac ROS Optimization
+
+- Use appropriate image compression for camera streams
+- Limit sensor update rates to necessary frequencies
+- Optimize CUDA memory usage
+- Use appropriate queue sizes for ROS topics
+
+## Best Practices
+
+### Environment Setup
+- Always source your ROS2 workspace before launching Isaac tools
+- Use consistent ROS_DOMAIN_ID across all terminals
+- Keep Isaac Sim and ROS2 versions compatible
+
+### Debugging Workflow
+1. Start with basic functionality before adding complexity
+2. Test each component independently before integration
+3. Monitor logs and system resources during operation
+4. Use visualization tools (RViz, Isaac Sim viewer) to verify behavior
+
+## Getting Help
+
+If you encounter issues not covered in this guide:
+
+1. Check the [NVIDIA Isaac documentation](https://nvidia-isaac-ros.github.io/)
+2. Search the [ROS answers forum](https://answers.ros.org/)
+3. Review the Isaac ROS GitHub repositories for known issues
+4. Ensure all software components are at recommended versions
+
+## Issue Reporting Template
+
+When reporting issues, include:
+- Isaac Sim version
+- ROS2 distribution and version
+- Isaac ROS package versions
+- Hardware specifications (GPU, CPU, RAM)
+- Error messages or logs
+- Steps to reproduce the issue

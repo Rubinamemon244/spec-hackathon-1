@@ -57,6 +57,14 @@ This educational module covers ROS 2 fundamentals, communication patterns, and U
   - [Learning Objectives](./book-frontend/docs/module-2-digital-twin/sensor-learning-objectives.md) - Measurable outcomes and skills assessment
   - [Module Conclusion](./book-frontend/docs/module-2-digital-twin/module-conclusion.md) - Summary and next steps
 
+### Module 5: AI-Robot Brain (NVIDIA Isaac)
+- [NVIDIA Isaac Sim Fundamentals](./book-frontend/docs/module-2-digital-twin/nvidia-isaac-sim-fundamentals.mdx) - Photorealistic simulation and synthetic data generation
+- [Isaac ROS for VSLAM and Navigation](./book-frontend/docs/module-2-digital-twin/isaac-ros-vslam-navigation.mdx) - Hardware-accelerated perception and VSLAM
+- [Nav2 Path Planning for Humanoid Robots](./book-frontend/docs/module-2-digital-twin/nav2-path-planning-humanoids.mdx) - Navigation and path planning with Nav2
+- [Integrated Project: Complete Humanoid Robot System](./book-frontend/docs/module-2-digital-twin/nvidia-isaac-integrated-project.mdx) - Complete system integration project
+- [Module Summary and Learning Outcomes](./book-frontend/docs/module-2-digital-twin/nvidia-isaac-module-summary.mdx) - Comprehensive module summary
+- [Comprehensive Troubleshooting Guide](./book-frontend/docs/module-2-digital-twin/nvidia-isaac-troubleshooting-comprehensive.mdx) - Consolidated troubleshooting information
+
 ## Getting Started
 
 ### Prerequisites
@@ -66,6 +74,16 @@ Before starting with the educational content, ensure you have:
 - Basic understanding of Python programming
 - Familiarity with command-line tools
 - Understanding of basic robotics concepts (optional but helpful)
+
+For the NVIDIA Isaac module (Module 5), you will also need:
+
+- Computer with NVIDIA GPU (RTX series recommended)
+- At least 16GB RAM (32GB recommended)
+- Ubuntu 22.04 LTS or Windows with WSL2
+- ROS2 Humble Hawksbill installed
+- NVIDIA Isaac Sim 2023.1+ (requires NVIDIA GPU drivers)
+- Isaac ROS packages
+- Nav2 navigation stack
 
 ### Running the Documentation Locally
 

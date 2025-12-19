@@ -222,3 +222,6 @@ h3 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Import Isaac custom styles */
+@import url('./isaac-custom.css');

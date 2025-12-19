@@ -1,0 +1,140 @@
+# Isaac Performance Benchmarking: GPU vs CPU
+
+## Overview
+
+This guide demonstrates how to measure and compare the performance of Isaac tools when using GPU acceleration versus CPU-only processing. Understanding these performance differences is crucial for robotics development.
+
+## Expected Performance Metrics
+
+### Isaac Sim Performance
+- **Basic scenes**: 30+ FPS on modern GPUs
+- **Complex scenes**: Performance varies based on GPU capability
+- **GPU utilization**: Should be visible in system monitoring tools
+
+### VSLAM Performance
+- **GPU acceleration**: 10+ FPS with Isaac ROS packages
+- **CPU-only**: 2-3 FPS with standard ROS2 packages
+- **Accuracy**: Similar between GPU and CPU implementations
+
+### Navigation Performance
+- **Path planning**: Sub-second for simple environments
+- **Costmap updates**: Real-time with sufficient compute
+- **Obstacle avoidance**: Responsive with adequate processing power
+
+## Benchmarking Examples
+
+### VSLAM Performance Test
+
+The following example demonstrates how to benchmark VSLAM performance:
+
+```bash
+# Compare CPU vs GPU performance for VSLAM
+# This would typically be run in Isaac Sim with both configurations
+
+# GPU-accelerated VSLAM
+ros2 launch isaac_ros_benchmark vslam_gpu_benchmark.launch.py
+
+# CPU-only VSLAM (for comparison)
+ros2 launch isaac_ros_benchmark vslam_cpu_benchmark.launch.py
+```
+
+### Performance Monitoring Commands
+
+```bash
+# Monitor GPU utilization during Isaac operations
+nvidia-smi
+
+# Monitor CPU usage
+htop
+
+# Monitor ROS2 topics for performance metrics
+ros2 topic echo /performance_metrics
+```
+
+### Synthetic Data Generation Benchmark
+
+```bash
+# Benchmark synthetic data generation speed
+# GPU-accelerated rendering
+ros2 launch isaac_ros_benchmark synthetic_data_gpu.launch.py
+
+# Record performance metrics
+# - Frames per second
+# - Data generation rate
+# - GPU utilization percentage
+```
+
+## Performance Comparison Data
+
+### Typical Results
+
+| Operation | CPU-only | GPU-accelerated | Improvement |
+|-----------|----------|-----------------|-------------|
+| VSLAM processing | 2-3 FPS | 10+ FPS | 3-5x faster |
+| Synthetic image generation | 5-8 FPS | 30+ FPS | 4-6x faster |
+| Point cloud processing | 1-2 FPS | 15+ FPS | 7-15x faster |
+
+### Hardware Impact
+
+Performance improvements vary based on hardware:
+
+- **RTX 3060**: 3-5x improvement for most operations
+- **RTX 3080**: 5-8x improvement for most operations
+- **RTX 4090**: 8-12x improvement for most operations
+
+## Benchmarking Exercise
+
+### Setup
+1. Run Isaac Sim with a standard scene
+2. Configure both GPU and CPU versions of a perception pipeline
+3. Use identical input data for both configurations
+
+### Measurements
+Record the following metrics:
+
+**GPU Configuration:**
+- Processing FPS: ____
+- GPU utilization: ____%
+- Memory usage: ____MB
+- Processing time per frame: ____ms
+
+**CPU Configuration:**
+- Processing FPS: ____
+- CPU utilization: ____%
+- Memory usage: ____MB
+- Processing time per frame: ____ms
+
+### Analysis
+Calculate the performance improvement:
+- Speedup ratio = GPU_FPS / CPU_FPS
+- Efficiency gain = (GPU_time / CPU_time) * 100%
+
+## Optimization Tips
+
+### For Better GPU Performance
+- Ensure sufficient VRAM for your scenes
+- Use appropriate texture compression
+- Optimize scene complexity for your target hardware
+- Update GPU drivers regularly
+
+### For Better CPU Performance
+- Use multi-threading where possible
+- Optimize algorithms for CPU cache efficiency
+- Consider reducing sensor data resolution
+- Use appropriate queue sizes in ROS2 nodes
+
+## Troubleshooting Performance Issues
+
+### Low GPU Utilization
+- Check if Isaac ROS nodes are properly configured for GPU
+- Verify CUDA compatibility
+- Ensure GPU is not throttling due to thermal issues
+
+### High CPU Usage
+- Check ROS2 node configuration for threading
+- Monitor for memory leaks
+- Verify appropriate queue sizes and callback configurations
+
+## Summary
+
+Understanding performance differences between GPU and CPU processing is essential for robotics development. Isaac tools are designed to leverage GPU acceleration for significant performance improvements, particularly in perception and simulation tasks.

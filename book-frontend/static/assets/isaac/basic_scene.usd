@@ -1,0 +1,91 @@
+#usda 1.0
+
+# Educational USD Scene for Isaac Sim Fundamentals
+# This scene demonstrates basic concepts for students learning Isaac Sim
+
+def Xform "World"
+{
+    # Educational robot platform
+    def Xform "Robot"
+    {
+        # Robot base link - main body of the robot
+        def Xform "Base"
+        {
+            # Simple cube representing the robot base
+            def Cube "RobotBody"
+            {
+                double3 xformOp:translate = (0, 0.5, 0)
+                uniform double3 size = (0.5, 0.5, 0.5)
+            }
+        }
+
+        # Camera sensor for perception
+        def Camera "Camera"
+        {
+            double3 xformOp:translate = (0.2, 0.8, 0)
+            float focalLength = 24
+            float horizontalAperture = 20.955
+            float verticalAperture = 15.2908
+            int2 resolution = (640, 480)
+        }
+    }
+
+    # Environment with basic objects
+    def Xform "Environment"
+    {
+        # Ground plane for the scene
+        def Cube "GroundPlane"
+        {
+            double3 xformOp:translate = (0, -0.5, 0)
+            uniform double3 size = (10, 0.1, 10)
+        }
+
+        # Example obstacles for navigation learning
+        def Sphere "Obstacle1"
+        {
+            double3 xformOp:translate = (2, 0.5, 2)
+            float radius = 0.5
+        }
+
+        def Cylinder "Obstacle2"
+        {
+            double3 xformOp:translate = (-2, 0.75, -1)
+            float radius = 0.4
+            float height = 1.5
+        }
+    }
+}
+
+# Educational lighting setup
+def Xform "Lighting"
+{
+    # Key light for main illumination
+    def DistantLight "KeyLight"
+    {
+        float intensity = 1000
+        color3f color = (0.9, 0.9, 0.9)
+        float angle = 0.5
+        double3 xformOp:translate = (0, 5, 0)
+        double3 xformOp:rotateXYZ = (45, 45, 0)
+    }
+
+    # Fill light to reduce harsh shadows
+    def DistantLight "FillLight"
+    {
+        float intensity = 300
+        color3f color = (0.5, 0.5, 0.5)
+        float angle = 0.5
+        double3 xformOp:translate = (0, 5, 0)
+        double3 xformOp:rotateXYZ = (-45, -30, 0)
+    }
+}
+
+# Physics properties for educational purposes
+def Xform "Physics"
+{
+    # Define gravity and other physics properties
+    def Xform "Gravity"
+    {
+        double3 acceleration = (0, -9.81, 0)
+    }
+}

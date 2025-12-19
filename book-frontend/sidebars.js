@@ -57,6 +57,26 @@ const sidebars = {
         'module-2-digital-twin/module-conclusion',
       ],
     },
+    {
+      type: 'category',
+      label: 'Module 5: AI-Robot Brain (NVIDIA Isaac)',
+      items: [
+        'module-2-digital-twin/nvidia-isaac-sim-fundamentals',
+        'module-2-digital-twin/isaac-ros-vslam-navigation',
+        'module-2-digital-twin/nav2-path-planning-humanoids',
+        'module-2-digital-twin/nvidia-isaac-integrated-project',
+        {
+          type: 'category',
+          label: 'Reference Materials',
+          items: [
+            'module-2-digital-twin/nvidia-isaac-module-summary',
+            'module-2-digital-twin/nvidia-isaac-troubleshooting-comprehensive',
+            'module-2-digital-twin/nvidia-isaac-video-resources',
+            'module-2-digital-twin/nvidia-isaac-quality-checklist',
+          ],
+        },
+      ],
+    },
   ],
 };
 

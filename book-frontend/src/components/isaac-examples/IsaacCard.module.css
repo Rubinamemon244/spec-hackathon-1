@@ -1,0 +1,125 @@
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  background-color: #f9f9f9;
+}
+
+.card.info {
+  border-left: 4px solid #2196f3;
+}
+
+.card.warning {
+  border-left: 4px solid #ff9800;
+}
+
+.card.success {
+  border-left: 4px solid #4caf50;
+}
+
+.title {
+  margin: 0 0 12px 0;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #333;
+}
+
+.content {
+  color: #555;
+}
+
+.example {
+  margin: 16px 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.exampleTitle {
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  font-size: 0.9em;
+  color: #555;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.exampleCode {
+  margin: 0;
+  padding: 12px;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  overflow-x: auto;
+  font-size: 0.9em;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  margin: 16px 0;
+  background-color: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 4px;
+}
+
+.noteIcon {
+  font-size: 1.2em;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.noteContent {
+  flex: 1;
+}
+
+/* Common Isaac Tutorial Styles */
+.isaacTutorial {
+  font-family: 'Roboto', sans-serif;
+}
+
+.isaacHeader {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.isaacSection {
+  margin: 24px 0;
+  padding: 16px;
+  border-left: 3px solid #667eea;
+}
+
+.isaacHighlight {
+  background-color: #fff3cd;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #ffc107;
+}
+
+.isaacCodeBlock {
+  background-color: #2d2d2d;
+  color: #f8f8f2;
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: 'Fira Code', monospace;
+}
+
+.isaacButton {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 4px;
+}
+
+.isaacButton:hover {
+  background-color: #5a6fd8;
+}
