@@ -1,0 +1,1179 @@
+---
+sidebar_position: 3
+title: "Capstone: The Autonomous Humanoid"
+---
+
+# Capstone: The Autonomous Humanoid
+
+## Overview
+
+This capstone chapter brings together all the concepts learned in this module to create a complete Vision-Language-Action (VLA) pipeline for an autonomous humanoid robot. We'll implement an end-to-end system that integrates voice recognition, LLM-based cognitive planning, computer vision, and robot control in NVIDIA Isaac simulation.
+
+## Learning Objectives
+
+By the end of this chapter, you will be able to:
+- Integrate voice, language, and action systems into a unified pipeline
+- Implement a complete VLA architecture for humanoid robots
+- Deploy and test the system in NVIDIA Isaac simulation
+- Evaluate the performance of the autonomous system
+- Identify and address integration challenges
+
+## Prerequisites
+
+Before starting this chapter, ensure you have completed:
+- Module 4 Chapter 1: Voice-to-Action Interfaces
+- Module 4 Chapter 2: LLM-Based Cognitive Planning
+- Basic understanding of NVIDIA Isaac Sim and ROS 2
+- Experience with Isaac ROS components
+
+## Architecture Overview
+
+Our complete VLA system consists of four main components that work together:
+
+1. **Vision System**: Processes camera feeds to detect objects, people, and obstacles
+2. **Language System**: Interprets voice commands and generates action plans
+3. **Action System**: Executes planned actions through robot controllers
+4. **Integration Layer**: Coordinates between all components and manages state
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Vision        │    │   Language       │    │   Action        │
+│   Component     │◄──►│   Component      │◄──►│   Component     │
+│                 │    │                  │    │                 │
+│ • Object        │    │ • Voice          │    │ • Motion        │
+│   Detection     │    │   Recognition    │    │   Control       │
+│ • Person        │    │ • Intent         │    │ • Manipulation  │
+│   Tracking      │    │   Understanding  │    │ • Navigation    │
+│ • Scene         │    │ • Plan           │    │                 │
+│   Understanding │    │   Generation     │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                              ▲
+                              │
+                      ┌──────────────────┐
+                      │ Integration      │
+                      │ Layer            │
+                      │ • State          │
+                      │   Management     │
+                      │ • Coordination   │
+                      │ • Error Handling │
+                      └──────────────────┘
+```
+
+## Complete VLA System Implementation
+
+Let's implement the complete system architecture:
+
+```python
+#!/usr/bin/env python3
+"""
+Complete Vision-Language-Action (VLA) System for Autonomous Humanoid Robots
+"""
+
+import asyncio
+import json
+import threading
+import queue
+import time
+from typing import Dict, List, Optional, Any
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String, Bool
+from sensor_msgs.msg import Image, CompressedImage
+from geometry_msgs.msg import Twist, PoseStamped
+from vision_msgs.msg import Detection2DArray, ObjectHypothesisWithPose
+from audio_common_msgs.msg import AudioData
+
+# Import custom message types
+from vla_interfaces.msg import VLAPerception, VLACommand, VLAActionResult
+from vla_interfaces.srv import GeneratePlan, ExecutePlan
+
+class VLASystemNode(Node):
+    """
+    Main VLA System Node that coordinates vision, language, and action components
+    """
+    def __init__(self):
+        super().__init__('vla_system_node')
+
+        # Initialize components
+        self.vision_component = VisionComponent(self)
+        self.language_component = LanguageComponent(self)
+        self.action_component = ActionComponent(self)
+
+        # Publishers and subscribers
+        self.status_publisher = self.create_publisher(String, '/vla_system/status', 10)
+        self.perception_publisher = self.create_publisher(VLAPerception, '/vla_system/perception', 10)
+
+        # Subscribers for external input
+        self.voice_subscriber = self.create_subscription(AudioData, '/audio_input',
+                                                        self.voice_callback, 10)
+        self.camera_subscriber = self.create_subscription(Image, '/camera/image_raw',
+                                                         self.image_callback, 10)
+
+        # Services
+        self.plan_service = self.create_service(GeneratePlan, 'vla_generate_plan',
+                                               self.generate_plan_callback)
+        self.execute_service = self.create_service(ExecutePlan, 'vla_execute_plan',
+                                                  self.execute_plan_callback)
+
+        # Internal state
+        self.system_state = {
+            'is_active': True,
+            'current_task': None,
+            'last_perception': None,
+            'robot_location': {'x': 0.0, 'y': 0.0, 'z': 0.0},
+            'battery_level': 100.0,
+            'carrying_object': None
+        }
+
+        # Queues for inter-component communication
+        self.perception_queue = queue.Queue(maxsize=10)
+        self.command_queue = queue.Queue(maxsize=10)
+        self.result_queue = queue.Queue(maxsize=10)
+
+        self.get_logger().info('VLA System initialized and ready')
+
+    def voice_callback(self, msg: AudioData):
+        """Handle incoming voice commands"""
+        self.get_logger().info('Received voice input')
+
+        # Forward to language component
+        command = self.language_component.process_audio(msg)
+        if command:
+            self.command_queue.put(command)
+
+    def image_callback(self, msg: Image):
+        """Handle incoming camera images"""
+        self.get_logger().info('Received image data')
+
+        # Forward to vision component
+        perception = self.vision_component.process_image(msg)
+        if perception:
+            self.perception_queue.put(perception)
+            self.perception_publisher.publish(perception)
+
+    def generate_plan_callback(self, request, response):
+        """Service callback for plan generation"""
+        try:
+            # Get current context
+            context = self.get_current_context()
+
+            # Generate plan using language component
+            plan = self.language_component.generate_plan(request.command, context)
+
+            response.plan = json.dumps(plan)
+            response.success = True
+            response.message = "Plan generated successfully"
+
+        except Exception as e:
+            response.success = False
+            response.message = str(e)
+
+        return response
+
+    def execute_plan_callback(self, request, response):
+        """Service callback for plan execution"""
+        try:
+            plan = json.loads(request.plan)
+
+            # Execute plan using action component
+            execution_result = self.action_component.execute_plan(plan)
+
+            response.success = execution_result['success']
+            response.message = execution_result['message']
+
+        except Exception as e:
+            response.success = False
+            response.message = str(e)
+
+        return response
+
+    def get_current_context(self) -> Dict:
+        """Get current system context for planning"""
+        # Get recent perception data
+        recent_perception = None
+        try:
+            while not self.perception_queue.empty():
+                recent_perception = self.perception_queue.get_nowait()
+        except queue.Empty:
+            pass
+
+        context = {
+            'robot_state': self.system_state,
+            'environment': recent_perception.data if recent_perception else {},
+            'timestamp': time.time(),
+            'available_actions': self.action_component.get_available_actions()
+        }
+
+        return context
+
+    def run_main_loop(self):
+        """Main coordination loop"""
+        rate = self.create_rate(10)  # 10 Hz
+
+        while rclpy.ok() and self.system_state['is_active']:
+            # Process incoming commands
+            try:
+                command = self.command_queue.get_nowait()
+
+                # Get current context
+                context = self.get_current_context()
+
+                # Generate and execute plan
+                plan = self.language_component.generate_plan(command, context)
+
+                if plan:
+                    execution_result = self.action_component.execute_plan(plan)
+
+                    # Publish result
+                    result_msg = VLAActionResult()
+                    result_msg.command = command
+                    result_msg.plan = json.dumps(plan)
+                    result_msg.success = execution_result['success']
+                    result_msg.message = execution_result['message']
+                    result_msg.timestamp = time.time()
+
+                    self.result_queue.put(result_msg)
+
+            except queue.Empty:
+                pass
+
+            # Update system status
+            status_msg = String()
+            status_msg.data = f"Active - Robot at ({self.system_state['robot_location']['x']:.2f}, {self.system_state['robot_location']['y']:.2f})"
+            self.status_publisher.publish(status_msg)
+
+            rate.sleep()
+
+
+class VisionComponent:
+    """
+    Vision component for object detection, scene understanding, and person tracking
+    """
+    def __init__(self, node: Node):
+        self.node = node
+        self.get_logger = node.get_logger
+
+        # Initialize computer vision models
+        self.object_detector = self._initialize_object_detector()
+        self.person_tracker = self._initialize_person_tracker()
+        self.scene_understanding = self._initialize_scene_understanding()
+
+        self.get_logger.info('Vision component initialized')
+
+    def _initialize_object_detector(self):
+        """Initialize object detection model"""
+        # This would typically load a YOLO or similar model
+        # For simulation, we'll use a mock implementation
+        class MockObjectDetector:
+            def detect(self, image):
+                # Simulate object detection results
+                return {
+                    'objects': [
+                        {'name': 'cup', 'confidence': 0.95, 'bbox': [100, 150, 200, 250]},
+                        {'name': 'book', 'confidence': 0.89, 'bbox': [300, 100, 400, 200]}
+                    ],
+                    'confidence_threshold': 0.8
+                }
+        return MockObjectDetector()
+
+    def _initialize_person_tracker(self):
+        """Initialize person tracking model"""
+        class MockPersonTracker:
+            def track(self, image):
+                return {
+                    'persons': [
+                        {'id': 1, 'bbox': [50, 50, 150, 200], 'center': (100, 125)},
+                        {'id': 2, 'bbox': [250, 80, 350, 230], 'center': (300, 155)}
+                    ]
+                }
+        return MockPersonTracker()
+
+    def _initialize_scene_understanding(self):
+        """Initialize scene understanding model"""
+        class MockSceneUnderstanding:
+            def understand(self, image):
+                return {
+                    'room_type': 'kitchen',
+                    'key_features': ['counter', 'refrigerator', 'table'],
+                    'navigation_points': [
+                        {'name': 'entrance', 'x': 0.0, 'y': 0.0},
+                        {'name': 'counter', 'x': 2.0, 'y': 1.0},
+                        {'name': 'refrigerator', 'x': 3.0, 'y': 0.0}
+                    ]
+                }
+        return MockSceneUnderstanding()
+
+    def process_image(self, image_msg: Image) -> Optional[VLAPerception]:
+        """Process an image and extract perception data"""
+        try:
+            # Convert ROS image to format suitable for CV models
+            cv_image = self._convert_ros_image_to_cv(image_msg)
+
+            # Run all vision models
+            objects = self.object_detector.detect(cv_image)
+            persons = self.person_tracker.track(cv_image)
+            scene = self.scene_understanding.understand(cv_image)
+
+            # Create perception message
+            perception_msg = VLAPerception()
+            perception_msg.header.stamp = self.node.get_clock().now().to_msg()
+            perception_msg.header.frame_id = image_msg.header.frame_id
+
+            # Populate with results
+            perception_msg.objects = self._format_objects(objects)
+            perception_msg.persons = self._format_persons(persons)
+            perception_msg.scene = json.dumps(scene)
+
+            self.get_logger.info(f'Detected {len(objects["objects"])} objects and {len(persons["persons"])} persons')
+
+            return perception_msg
+
+        except Exception as e:
+            self.get_logger.error(f'Error processing image: {str(e)}')
+            return None
+
+    def _convert_ros_image_to_cv(self, image_msg: Image):
+        """Convert ROS image message to OpenCV format"""
+        # This would use cv_bridge in real implementation
+        # For simulation, we return a placeholder
+        return image_msg
+
+    def _format_objects(self, objects_data: Dict) -> List[ObjectHypothesisWithPose]:
+        """Format object detection results"""
+        objects = []
+        for obj in objects_data['objects']:
+            if obj['confidence'] > objects_data['confidence_threshold']:
+                hypothesis = ObjectHypothesisWithPose()
+                hypothesis.hypothesis.class_id = obj['name']
+                hypothesis.hypothesis.score = obj['confidence']
+                objects.append(hypothesis)
+        return objects
+
+    def _format_persons(self, persons_data: Dict) -> List[ObjectHypothesisWithPose]:
+        """Format person tracking results"""
+        persons = []
+        for person in persons_data['persons']:
+            hypothesis = ObjectHypothesisWithPose()
+            hypothesis.hypothesis.class_id = f'person_{person["id"]}'
+            hypothesis.hypothesis.score = 0.95  # High confidence for tracking
+            persons.append(hypothesis)
+        return persons
+
+
+class LanguageComponent:
+    """
+    Language component for voice recognition and cognitive planning
+    """
+    def __init__(self, node: Node):
+        self.node = node
+        self.get_logger = node.get_logger
+
+        # Initialize voice recognition
+        self.voice_recognizer = self._initialize_voice_recognizer()
+
+        # Initialize LLM client
+        self.llm_client = self._initialize_llm_client()
+
+        self.get_logger.info('Language component initialized')
+
+    def _initialize_voice_recognizer(self):
+        """Initialize voice recognition system"""
+        # This would typically use OpenAI Whisper or similar
+        # For simulation, we'll use a mock implementation
+        class MockVoiceRecognizer:
+            def recognize(self, audio_data):
+                # Simulate voice recognition
+                # In real implementation, this would call Whisper API
+                return "Could not recognize audio in simulation mode"
+        return MockVoiceRecognizer()
+
+    def _initialize_llm_client(self):
+        """Initialize LLM client"""
+        import openai
+        openai.api_key = self.node.declare_parameter('openai_api_key', '').value
+        return openai
+
+    def process_audio(self, audio_msg: AudioData) -> Optional[str]:
+        """Process audio input and extract command"""
+        try:
+            # Convert audio data to text
+            text = self.voice_recognizer.recognize(audio_msg)
+
+            # Check if this is a valid command
+            if self._is_valid_command(text):
+                self.get_logger.info(f'Recognized command: {text}')
+                return text
+            else:
+                self.get_logger.warn(f'Invalid command: {text}')
+                return None
+
+        except Exception as e:
+            self.get_logger.error(f'Error processing audio: {str(e)}')
+            return None
+
+    def _is_valid_command(self, text: str) -> bool:
+        """Check if recognized text is a valid command"""
+        # Simple validation - in real implementation this would be more sophisticated
+        valid_indicators = ['go', 'move', 'take', 'bring', 'pick', 'put', 'stop', 'help']
+        return any(indicator in text.lower() for indicator in valid_indicators)
+
+    def generate_plan(self, command: str, context: Dict) -> Optional[List[Dict]]:
+        """Generate an action plan from natural language command and context"""
+        try:
+            prompt = self._build_planning_prompt(command, context)
+
+            completion = self.llm_client.ChatCompletion.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1,
+                max_tokens=1000
+            )
+
+            plan_text = completion.choices[0].message.content.strip()
+
+            # Extract JSON from response
+            plan_json = self._extract_json_from_response(plan_text)
+
+            if plan_json:
+                self.get_logger.info(f'Generated plan with {len(plan_json["steps"])} steps')
+                return plan_json["steps"]
+            else:
+                self.get_logger.error('Could not extract valid plan from LLM response')
+                return None
+
+        except Exception as e:
+            self.get_logger.error(f'Error generating plan: {str(e)}')
+            return None
+
+    def _build_planning_prompt(self, command: str, context: Dict) -> str:
+        """Build the prompt for the LLM planning system"""
+        return f"""
+        Generate a detailed action plan for a humanoid robot based on the following command and context.
+
+        Command: "{command}"
+
+        Current Context:
+        - Robot Location: {context['robot_state']['robot_location']}
+        - Battery Level: {context['robot_state']['battery_level']}%
+        - Carrying Object: {context['robot_state']['carrying_object']}
+        - Environment Objects: {[obj['name'] for obj in context['environment'].get('objects', [])]}
+        - People Present: {len(context['environment'].get('persons', []))}
+        - Room Type: {context['environment'].get('scene_info', {}).get('room_type', 'unknown')}
+        - Available Actions: {context['available_actions']}
+
+        Generate a JSON object with the following structure:
+        {{
+            "steps": [
+                {{
+                    "action": "action_type",
+                    "parameters": {{}},
+                    "description": "Human-readable description",
+                    "expected_duration": "seconds"
+                }}
+            ],
+            "estimated_total_duration": "seconds",
+            "success_criteria": ["criteria1", "criteria2"]
+        }}
+
+        Available Actions:
+        - NAVIGATE_TO_LOCATION: Move to a specific location
+        - DETECT_OBJECT: Look for a specific object
+        - GRASP_OBJECT: Pick up an object
+        - PLACE_OBJECT: Place an object at a location
+        - SPEAK: Make the robot speak
+        - WAIT: Pause execution
+        - PERFORM_GESTURE: Execute a predefined gesture
+        - FOLLOW_PERSON: Follow a person
+        - AVOID_OBSTACLES: Navigate while avoiding obstacles
+        """
+
+    def _extract_json_from_response(self, response: str) -> Optional[Dict]:
+        """Extract JSON from LLM response"""
+        try:
+            # Look for JSON between ```json and ``` markers
+            if "```json" in response:
+                start_idx = response.find("```json") + 7
+                end_idx = response.find("```", start_idx)
+                json_str = response[start_idx:end_idx].strip()
+            elif response.strip().startswith("{{"):
+                json_str = response.strip()
+            else:
+                return None
+
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            return None
+
+
+class ActionComponent:
+    """
+    Action component for robot control and task execution
+    """
+    def __init__(self, node: Node):
+        self.node = node
+        self.get_logger = node.get_logger
+
+        # Initialize ROS publishers/subscribers for robot control
+        self.cmd_vel_publisher = node.create_publisher(Twist, '/cmd_vel', 10)
+        self.navigation_publisher = node.create_publisher(PoseStamped, '/goal_pose', 10)
+
+        # Action execution state
+        self.is_executing = False
+        self.current_action = None
+
+        self.get_logger.info('Action component initialized')
+
+    def get_available_actions(self) -> List[str]:
+        """Return list of available actions"""
+        return [
+            'NAVIGATE_TO_LOCATION',
+            'DETECT_OBJECT',
+            'GRASP_OBJECT',
+            'PLACE_OBJECT',
+            'SPEAK',
+            'WAIT',
+            'PERFORM_GESTURE',
+            'FOLLOW_PERSON',
+            'AVOID_OBSTACLES'
+        ]
+
+    def execute_plan(self, plan: List[Dict]) -> Dict[str, Any]:
+        """Execute a plan consisting of multiple actions"""
+        if self.is_executing:
+            return {'success': False, 'message': 'Already executing a plan'}
+
+        self.is_executing = True
+        execution_results = []
+
+        try:
+            for i, action_step in enumerate(plan):
+                self.get_logger.info(f'Executing step {i+1}/{len(plan)}: {action_step["description"]}')
+
+                result = self._execute_single_action(action_step)
+                execution_results.append(result)
+
+                if not result['success']:
+                    self.get_logger.error(f'Action failed: {result["message"]}')
+                    return {
+                        'success': False,
+                        'message': f'Action failed at step {i+1}: {result["message"]}',
+                        'results': execution_results
+                    }
+
+            self.get_logger.info('Plan executed successfully')
+            return {
+                'success': True,
+                'message': 'Plan completed successfully',
+                'results': execution_results
+            }
+
+        except Exception as e:
+            self.get_logger.error(f'Error executing plan: {str(e)}')
+            return {
+                'success': False,
+                'message': f'Plan execution error: {str(e)}',
+                'results': execution_results
+            }
+
+        finally:
+            self.is_executing = False
+
+    def _execute_single_action(self, action_step: Dict) -> Dict[str, Any]:
+        """Execute a single action step"""
+        action_type = action_step['action']
+        parameters = action_step.get('parameters', {})
+
+        try:
+            if action_type == 'NAVIGATE_TO_LOCATION':
+                return self._execute_navigate(parameters)
+            elif action_type == 'DETECT_OBJECT':
+                return self._execute_detect_object(parameters)
+            elif action_type == 'GRASP_OBJECT':
+                return self._execute_grasp_object(parameters)
+            elif action_type == 'PLACE_OBJECT':
+                return self._execute_place_object(parameters)
+            elif action_type == 'SPEAK':
+                return self._execute_speak(parameters)
+            elif action_type == 'WAIT':
+                return self._execute_wait(parameters)
+            elif action_type == 'PERFORM_GESTURE':
+                return self._execute_gesture(parameters)
+            elif action_type == 'FOLLOW_PERSON':
+                return self._execute_follow_person(parameters)
+            elif action_type == 'AVOID_OBSTACLES':
+                return self._execute_avoid_obstacles(parameters)
+            else:
+                return {
+                    'success': False,
+                    'message': f'Unknown action type: {action_type}'
+                }
+
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Error executing {action_type}: {str(e)}'
+            }
+
+    def _execute_navigate(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute navigation action"""
+        target_location = parameters.get('target_location')
+
+        if not target_location:
+            return {'success': False, 'message': 'Missing target location'}
+
+        # In simulation, we'll just log the navigation command
+        self.get_logger.info(f'Navigating to {target_location}')
+
+        # In real implementation, this would send navigation goals
+        # to Nav2 or similar navigation stack
+        return {'success': True, 'message': f'Navigation to {target_location} initiated'}
+
+    def _execute_detect_object(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute object detection action"""
+        object_type = parameters.get('object_type')
+
+        if not object_type:
+            return {'success': False, 'message': 'Missing object type'}
+
+        self.get_logger.info(f'Detecting object: {object_type}')
+
+        # In real implementation, this would trigger object detection
+        # and return detection results
+        return {'success': True, 'message': f'Object {object_type} detection completed'}
+
+    def _execute_grasp_object(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute object grasping action"""
+        object_type = parameters.get('object_type')
+
+        if not object_type:
+            return {'success': False, 'message': 'Missing object type'}
+
+        self.get_logger.info(f'Grasping object: {object_type}')
+
+        # In real implementation, this would control manipulator arms
+        return {'success': True, 'message': f'Object {object_type} grasped successfully'}
+
+    def _execute_place_object(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute object placement action"""
+        object_type = parameters.get('object_type')
+        location = parameters.get('location')
+
+        if not object_type or not location:
+            return {'success': False, 'message': 'Missing object type or location'}
+
+        self.get_logger.info(f'Placing {object_type} at {location}')
+
+        # In real implementation, this would control manipulator arms
+        return {'success': True, 'message': f'Object {object_type} placed at {location}'}
+
+    def _execute_speak(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute speech action"""
+        text = parameters.get('text')
+
+        if not text:
+            return {'success': False, 'message': 'Missing text to speak'}
+
+        self.get_logger.info(f'Speaking: {text}')
+
+        # In real implementation, this would use text-to-speech
+        return {'success': True, 'message': f'Spoke: {text}'}
+
+    def _execute_wait(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute wait action"""
+        duration = parameters.get('duration', 1.0)
+
+        self.get_logger.info(f'Waiting for {duration} seconds')
+
+        # In real implementation, this would sleep or wait for conditions
+        time.sleep(duration)
+
+        return {'success': True, 'message': f'Waited for {duration} seconds'}
+
+    def _execute_gesture(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute gesture action"""
+        gesture_type = parameters.get('gesture_type', 'wave')
+
+        self.get_logger.info(f'Performing gesture: {gesture_type}')
+
+        # In real implementation, this would control humanoid gestures
+        return {'success': True, 'message': f'Gesture {gesture_type} performed'}
+
+    def _execute_follow_person(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute person following action"""
+        person_id = parameters.get('person_id')
+
+        self.get_logger.info(f'Following person ID: {person_id}')
+
+        # In real implementation, this would activate person following
+        return {'success': True, 'message': f'Following person {person_id}'}
+
+    def _execute_avoid_obstacles(self, parameters: Dict) -> Dict[str, Any]:
+        """Execute obstacle avoidance action"""
+        self.get_logger.info('Activating obstacle avoidance')
+
+        # In real implementation, this would enable obstacle avoidance
+        return {'success': True, 'message': 'Obstacle avoidance activated'}
+
+
+def main(args=None):
+    """Main entry point for the VLA system"""
+    rclpy.init(args=args)
+
+    vla_node = VLASystemNode()
+
+    try:
+        # Start the main loop in a separate thread
+        loop_thread = threading.Thread(target=vla_node.run_main_loop)
+        loop_thread.daemon = True
+        loop_thread.start()
+
+        # Spin the node
+        rclpy.spin(vla_node)
+
+    except KeyboardInterrupt:
+        vla_node.get_logger().info('Shutting down VLA system...')
+    finally:
+        vla_node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+## Isaac Simulation Integration
+
+Now let's create the launch file to run our VLA system in Isaac simulation:
+
+```xml
+<!-- vla_system.launch.py -->
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+
+def generate_launch_description():
+    # Arguments
+    isaac_sim_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            get_package_share_directory('isaac_ros_bringup'),
+            '/launch/isaac_sim.launch.py'
+        ])
+    )
+
+    # VLA System Node
+    vla_system_node = Node(
+        package='vla_system',
+        executable='vla_system_node',
+        name='vla_system_node',
+        output='screen',
+        parameters=[
+            {'openai_api_key': ''},  # Will be set from environment
+        ],
+        remappings=[
+            ('/camera/image_raw', '/front_stereo_camera/left/image_rect_color'),
+            ('/audio_input', '/audio/audio'),
+            ('/cmd_vel', '/diff_drive_controller/cmd_vel_unstamped'),
+        ]
+    )
+
+    # Isaac ROS Bridge Nodes
+    perception_nodes = [
+        Node(
+            package='isaac_ros_image_pipeline',
+            executable='image_flip_node',
+            name='image_flip_node',
+            parameters=[{
+                'flip_axis': 0,  # Flip vertically
+            }],
+            remappings=[
+                ('image', '/front_stereo_camera/left/image_rect_color'),
+                ('flipped_image', 'flipped_image'),
+            ]
+        ),
+        Node(
+            package='isaac_ros_detectnet',
+            executable='detectnet_node',
+            name='detectnet_node',
+            parameters=[
+                {'model_name': 'ssd_mobilenet_v2_coco'},
+                {'input_topic': 'flipped_image'},
+                {'publish_topic': 'detections'},
+            ]
+        ),
+    ]
+
+    return LaunchDescription([
+        isaac_sim_launch,
+        vla_system_node,
+    ] + perception_nodes)
+```
+
+## Testing the Complete System
+
+Let's create a test script to validate our complete VLA system:
+
+```python
+#!/usr/bin/env python3
+"""
+Test script for the complete VLA system
+"""
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+from vla_interfaces.srv import GeneratePlan, ExecutePlan
+import json
+import time
+
+class VLATestNode(Node):
+    def __init__(self):
+        super().__init__('vla_test_node')
+
+        # Create clients for VLA services
+        self.plan_client = self.create_client(GeneratePlan, 'vla_generate_plan')
+        self.execute_client = self.create_client(ExecutePlan, 'vla_execute_plan')
+
+        # Wait for services to be available
+        while not self.plan_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Plan generation service not available, waiting...')
+
+        while not self.execute_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Plan execution service not available, waiting...')
+
+        self.get_logger().info('VLA test node initialized')
+
+    async def test_complete_workflow(self):
+        """Test the complete VLA workflow"""
+        test_commands = [
+            "Go to the kitchen and bring me the blue cup",
+            "Find John and follow him to the office",
+            "Navigate to the entrance and wait there",
+            "Pick up the book from the table and place it on the shelf"
+        ]
+
+        for command in test_commands:
+            self.get_logger().info(f'Testing command: "{command}"')
+
+            # Generate plan
+            plan_request = GeneratePlan.Request()
+            plan_request.command = command
+
+            plan_future = self.plan_client.call_async(plan_request)
+            rclpy.spin_until_future_complete(self, plan_future)
+
+            plan_response = plan_future.result()
+
+            if plan_response.success:
+                self.get_logger().info(f'Plan generated successfully: {plan_response.message}')
+
+                # Execute plan
+                execute_request = ExecutePlan.Request()
+                execute_request.plan = plan_response.plan
+
+                execute_future = self.execute_client.call_async(execute_request)
+                rclpy.spin_until_future_complete(self, execute_future)
+
+                execute_response = execute_future.result()
+
+                if execute_response.success:
+                    self.get_logger().info(f'Plan executed successfully: {execute_response.message}')
+                else:
+                    self.get_logger().error(f'Plan execution failed: {execute_response.message}')
+            else:
+                self.get_logger().error(f'Plan generation failed: {plan_response.message}')
+
+            # Wait between tests
+            time.sleep(2)
+
+    def test_individual_components(self):
+        """Test individual components of the VLA system"""
+        self.get_logger().info('Testing individual VLA components...')
+
+        # Test 1: Plan generation
+        plan_request = GeneratePlan.Request()
+        plan_request.command = "Move forward 2 meters"
+
+        plan_future = self.plan_client.call_async(plan_request)
+        rclpy.spin_until_future_complete(self, plan_future)
+        plan_response = plan_future.result()
+
+        if plan_response.success:
+            self.get_logger().info('✓ Plan generation test passed')
+            plan_data = json.loads(plan_response.plan)
+            self.get_logger().info(f'Generated plan with {len(plan_data["steps"])} steps')
+        else:
+            self.get_logger().error('✗ Plan generation test failed')
+
+        # Test 2: Plan execution (with a simple plan)
+        simple_plan = {
+            "steps": [
+                {
+                    "action": "SPEAK",
+                    "parameters": {"text": "Testing plan execution"},
+                    "description": "Speak test message"
+                }
+            ]
+        }
+
+        execute_request = ExecutePlan.Request()
+        execute_request.plan = json.dumps(simple_plan)
+
+        execute_future = self.execute_client.call_async(execute_request)
+        rclpy.spin_until_future_complete(self, execute_future)
+        execute_response = execute_future.result()
+
+        if execute_response.success:
+            self.get_logger().info('✓ Plan execution test passed')
+        else:
+            self.get_logger().error('✗ Plan execution test failed')
+
+
+async def main():
+    rclpy.init()
+
+    test_node = VLATestNode()
+
+    # Run component tests first
+    test_node.test_individual_components()
+
+    # Run complete workflow test
+    await test_node.test_complete_workflow()
+
+    test_node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    import asyncio
+    asyncio.run(main())
+```
+
+## Performance Evaluation
+
+Let's implement evaluation metrics to assess our VLA system:
+
+```python
+class VLAEvaluator:
+    """
+    Evaluation framework for VLA system performance
+    """
+    def __init__(self):
+        self.metrics = {
+            'task_success_rate': [],
+            'response_time': [],
+            'plan_quality_score': [],
+            'language_accuracy': [],
+            'vision_detection_rate': []
+        }
+
+    def evaluate_task_completion(self, command: str, plan: List[Dict],
+                                execution_result: Dict) -> Dict:
+        """Evaluate how well a task was completed"""
+        evaluation = {
+            'command': command,
+            'plan_length': len(plan),
+            'execution_success': execution_result['success'],
+            'execution_time': execution_result.get('duration', 0),
+            'task_completed': self._check_task_completion(command, plan, execution_result),
+            'quality_score': 0.0
+        }
+
+        # Calculate quality score based on various factors
+        score = self._calculate_quality_score(evaluation, plan, execution_result)
+        evaluation['quality_score'] = score
+
+        # Store metrics
+        self.metrics['task_success_rate'].append(1 if evaluation['task_completed'] else 0)
+        self.metrics['response_time'].append(evaluation['execution_time'])
+        self.metrics['plan_quality_score'].append(score)
+
+        return evaluation
+
+    def _check_task_completion(self, command: str, plan: List[Dict],
+                              execution_result: Dict) -> bool:
+        """Check if the task was completed as requested"""
+        # This is a simplified check - in practice, this would be more sophisticated
+        # involving perception feedback and goal achievement verification
+
+        # For now, we'll assume successful execution means task completion
+        return execution_result['success']
+
+    def _calculate_quality_score(self, evaluation: Dict, plan: List[Dict],
+                                execution_result: Dict) -> float:
+        """Calculate overall quality score for the execution"""
+        # Factors affecting quality:
+        # 1. Plan efficiency (length vs. task complexity)
+        # 2. Execution success
+        # 3. Time to completion
+        # 4. Resource usage
+
+        base_score = 1.0 if evaluation['execution_success'] else 0.0
+
+        # Penalize overly long plans for simple tasks
+        if len(plan) > 10 and 'simple' in evaluation['command'].lower():
+            base_score *= 0.8
+
+        # Reward efficient execution
+        if evaluation['execution_time'] < 30:  # seconds
+            base_score *= 1.1
+
+        return min(base_score, 1.0)  # Clamp to 1.0 maximum
+
+    def get_performance_report(self) -> Dict:
+        """Generate a performance report"""
+        if not self.metrics['task_success_rate']:
+            return {'error': 'No evaluations recorded yet'}
+
+        avg_success_rate = sum(self.metrics['task_success_rate']) / len(self.metrics['task_success_rate'])
+        avg_response_time = sum(self.metrics['response_time']) / len(self.metrics['response_time']) if self.metrics['response_time'] else 0
+        avg_quality_score = sum(self.metrics['plan_quality_score']) / len(self.metrics['plan_quality_score'])
+
+        return {
+            'overall_success_rate': avg_success_rate,
+            'average_response_time': avg_response_time,
+            'average_quality_score': avg_quality_score,
+            'total_evaluations': len(self.metrics['task_success_rate']),
+            'recommendations': self._generate_recommendations()
+        }
+
+    def _generate_recommendations(self) -> List[str]:
+        """Generate recommendations for system improvement"""
+        recommendations = []
+
+        if len(self.metrics['task_success_rate']) > 0:
+            success_rate = sum(self.metrics['task_success_rate']) / len(self.metrics['task_success_rate'])
+            if success_rate < 0.7:
+                recommendations.append("Consider improving plan validation and error recovery mechanisms")
+
+            if sum(self.metrics['response_time']) / len(self.metrics['response_time']) > 60:
+                recommendations.append("Optimize plan generation and execution for better response times")
+
+        return recommendations
+```
+
+## Practical Exercise: Complete VLA System Deployment
+
+### Objective
+Deploy and test the complete Vision-Language-Action pipeline in NVIDIA Isaac simulation.
+
+### Steps:
+1. Set up the Isaac simulation environment
+2. Launch the complete VLA system
+3. Test various voice commands in simulation
+4. Evaluate system performance using the evaluation framework
+5. Analyze results and identify improvement areas
+
+### Expected Outcome
+A fully functional VLA system that can accept voice commands like "Hey robot, go to the kitchen and bring me the blue cup from the counter" and execute the task autonomously in simulation.
+
+### Commands to Test:
+- "Go to the kitchen and bring me the blue cup"
+- "Find John and follow him to the office"
+- "Navigate to the entrance and wait there"
+- "Pick up the book from the table and place it on the shelf"
+- "Introduce yourself to the person in the living room"
+
+## Troubleshooting Common Integration Issues
+
+### 1. Component Synchronization Problems
+- **Issue**: Vision, language, and action components not properly synchronized
+- **Solution**: Implement proper message queuing and timestamp synchronization
+
+### 2. LLM Response Parsing Errors
+- **Issue**: Difficulty parsing structured responses from LLMs
+- **Solution**: Use consistent JSON schemas and implement robust parsing
+
+### 3. Real-time Performance Issues
+- **Issue**: System not responding quickly enough for real-time interaction
+- **Solution**: Optimize model inference, implement caching, and use lightweight models where possible
+
+### 4. Context Loss Between Components
+- **Issue**: Information not properly shared between vision, language, and action
+- **Solution**: Implement a centralized state manager and context sharing mechanism
+
+## Advanced Topics
+
+### Multi-Modal Fusion
+Combine information from multiple sensors and modalities:
+
+```python
+class MultiModalFusion:
+    def __init__(self):
+        self.confidence_weights = {
+            'vision': 0.7,
+            'language': 0.8,
+            'prior_knowledge': 0.5
+        }
+
+    def fuse_information(self, vision_data, language_data, context_data):
+        """Fuse information from multiple modalities"""
+        # Weighted combination of different modalities
+        fused_result = {}
+
+        # Combine object detections with language understanding
+        for obj in vision_data.get('objects', []):
+            if obj['name'] in language_data.get('requested_objects', []):
+                obj['confidence'] *= self.confidence_weights['language']
+
+        fused_result['objects'] = vision_data.get('objects', [])
+        fused_result['intent'] = language_data.get('intent')
+        fused_result['context'] = context_data
+
+        return fused_result
+```
+
+### Learning and Adaptation
+Implement system learning from interactions:
+
+```python
+class VLALearningSystem:
+    def __init__(self):
+        self.experience_database = []
+        self.performance_history = []
+
+    def record_interaction(self, command, plan, result, feedback=None):
+        """Record interaction for learning"""
+        experience = {
+            'command': command,
+            'plan': plan,
+            'result': result,
+            'feedback': feedback,
+            'timestamp': time.time()
+        }
+        self.experience_database.append(experience)
+
+    def adapt_behavior(self):
+        """Adapt system behavior based on experience"""
+        # Analyze successful patterns in experience database
+        successful_interactions = [
+            exp for exp in self.experience_database
+            if exp['result']['success']
+        ]
+
+        if successful_interactions:
+            # Update planning heuristics based on successful patterns
+            self._update_planning_heuristics(successful_interactions)
+```
+
+## Summary
+
+This capstone chapter has demonstrated how to integrate all VLA components into a complete autonomous humanoid system. We've implemented:
+
+1. **Vision Component**: Object detection, person tracking, and scene understanding
+2. **Language Component**: Voice recognition and LLM-based cognitive planning
+3. **Action Component**: Robot control and task execution
+4. **Integration Layer**: Coordination and state management
+
+The complete system enables natural interaction with humanoid robots through voice commands, intelligent task planning, and autonomous execution. This represents a significant step toward truly autonomous robotic systems that can understand and respond to human commands in complex environments.
+
+Key achievements of this module:
+- Implemented voice-to-action interfaces using OpenAI Whisper
+- Created LLM-based cognitive planning for task decomposition
+- Developed a complete end-to-end VLA pipeline in simulation
+- Evaluated system performance and identified improvement areas
+
+The foundation laid in this module enables further development of advanced autonomous capabilities for humanoid robots operating in real-world environments.

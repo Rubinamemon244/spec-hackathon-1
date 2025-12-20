@@ -1,0 +1,373 @@
+/* VLA Integration Component Styles */
+
+.integrationContainer {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.integrationRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.integrationInterface {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.systemPanel {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background-color: #f0f8ff;
+  border-radius: 6px;
+  border: 1px solid #cce5ff;
+}
+
+.statusDisplay {
+  margin-bottom: 1rem;
+}
+
+.statusIndicator {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.statusIndicator.statusIdle {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.statusIndicator.statusProcessing {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+  animation: pulse 1.5s infinite;
+}
+
+.statusIndicator.statusVisionProcessing {
+  background-color: #cce5ff;
+  color: #004085;
+  border: 1px solid #99c7ff;
+  animation: pulse 1.5s infinite;
+}
+
+.statusIndicator.statusLanguageProcessing {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+  animation: pulse 1.5s infinite;
+}
+
+.statusIndicator.statusActionExecution {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  animation: pulse 1.5s infinite;
+}
+
+.statusIndicator.statusCompleted {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.commandInput {
+  margin: 1.5rem 0;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.commandInputField {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.commandInputField:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.commandButtons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.executeButton {
+  flex: 1;
+}
+
+.resetButton {
+  flex: 0.3;
+}
+
+.sampleCommands {
+  margin-top: 1rem;
+}
+
+.sampleCommands h5 {
+  margin-bottom: 0.5rem;
+}
+
+.commandChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.commandChip {
+  padding: 0.25rem 0.5rem;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.commandChip:hover {
+  background-color: #dee2e6;
+  transform: translateY(-1px);
+}
+
+.commandChip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.visualizationArea {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.pipelineSection {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.visionData {
+  margin-top: 0.5rem;
+}
+
+.objectList {
+  margin: 0.5rem 0;
+}
+
+.objectItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.objectName {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.objectConfidence {
+  color: #28a745;
+}
+
+.objectPosition {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.placeholderText {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.languageData {
+  margin-top: 0.5rem;
+}
+
+.actionSequence {
+  margin-top: 0.5rem;
+}
+
+.actionSteps {
+  margin-top: 0.5rem;
+}
+
+.actionStep {
+  padding: 0.75rem;
+  margin: 0.25rem 0;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.actionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.actionNumber {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.actionType {
+  font-family: monospace;
+  background-color: #e9ecef;
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.actionCompleted {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.completedBadge {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.actionDescription {
+  color: #495057;
+  margin: 0.25rem 0;
+}
+
+.actionParameters {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-family: monospace;
+}
+
+.systemLog {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f1f3f4;
+  border-radius: 6px;
+  border: 1px solid #d1d5d8;
+}
+
+.logEntries {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.logEntry {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.logTime {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: bold;
+  min-width: 60px;
+}
+
+.logMessage {
+  flex: 1;
+  font-size: 0.85rem;
+}
+
+.logEntry.logInfo {
+  color: #0c5460;
+}
+
+.logEntry.logSuccess {
+  color: #155724;
+}
+
+.logEntry.logWarning {
+  color: #856404;
+}
+
+.logEntry.logError {
+  color: #721c24;
+}
+
+.systemInfo {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.infoCard {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.infoCard h5 {
+  margin-top: 0;
+  color: #007bff;
+}
+
+.infoCard p {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+@media (max-width: 768px) {
+  .integrationContainer {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+
+  .integrationInterface {
+    padding: 1rem;
+  }
+
+  .commandButtons {
+    flex-direction: column;
+  }
+
+  .commandChips {
+    flex-direction: column;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}

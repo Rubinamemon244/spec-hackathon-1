@@ -1,6 +1,6 @@
 # ROS 2 for Humanoid Robotics Education
 
-Welcome to the ROS 2 for Humanoid Robotics Education project! This comprehensive educational resource is designed to teach ROS 2 concepts specifically in the context of humanoid robotics. The content is organized into three main modules that progressively build knowledge from fundamentals to advanced applications.
+Welcome to the ROS 2 for Humanoid Robotics Education project! This comprehensive educational resource is designed to teach ROS 2 concepts specifically in the context of humanoid robotics. The content is organized into five main modules that progressively build knowledge from fundamentals to advanced applications.
 
 ## Table of Contents
 
@@ -58,12 +58,13 @@ This educational module covers ROS 2 fundamentals, communication patterns, and U
   - [Module Conclusion](./book-frontend/docs/module-2-digital-twin/module-conclusion.md) - Summary and next steps
 
 ### Module 5: AI-Robot Brain (NVIDIA Isaac)
-- [NVIDIA Isaac Sim Fundamentals](./book-frontend/docs/module-2-digital-twin/nvidia-isaac-sim-fundamentals.mdx) - Photorealistic simulation and synthetic data generation
-- [Isaac ROS for VSLAM and Navigation](./book-frontend/docs/module-2-digital-twin/isaac-ros-vslam-navigation.mdx) - Hardware-accelerated perception and VSLAM
-- [Nav2 Path Planning for Humanoid Robots](./book-frontend/docs/module-2-digital-twin/nav2-path-planning-humanoids.mdx) - Navigation and path planning with Nav2
-- [Integrated Project: Complete Humanoid Robot System](./book-frontend/docs/module-2-digital-twin/nvidia-isaac-integrated-project.mdx) - Complete system integration project
-- [Module Summary and Learning Outcomes](./book-frontend/docs/module-2-digital-twin/nvidia-isaac-module-summary.mdx) - Comprehensive module summary
-- [Comprehensive Troubleshooting Guide](./book-frontend/docs/module-2-digital-twin/nvidia-isaac-troubleshooting-comprehensive.mdx) - Consolidated troubleshooting information
+- [NVIDIA Isaac Sim Fundamentals](./book-frontend/docs/module-3-nvidia-isaac/nvidia-isaac-sim-fundamentals.mdx) - Photorealistic simulation and synthetic data generation
+- [Isaac ROS for VSLAM and Navigation](./book-frontend/docs/module-3-nvidia-isaac/isaac-ros-vslam-navigation.mdx) - Hardware-accelerated perception and VSLAM
+- [Nav2 Path Planning for Humanoid Robots](./book-frontend/docs/module-3-nvidia-isaac/nav2-path-planning-humanoids.mdx) - Navigation and path planning with Nav2
+- [Integrated Project: Complete Humanoid Robot System](./book-frontend/docs/module-3-nvidia-isaac/nvidia-isaac-integrated-project.mdx) - Complete system integration project
+- [Module Summary and Learning Outcomes](./book-frontend/docs/module-3-nvidia-isaac/nvidia-isaac-module-summary.mdx) - Comprehensive module summary
+- [Comprehensive Troubleshooting Guide](./book-frontend/docs/module-3-nvidia-isaac/nvidia-isaac-troubleshooting-comprehensive.mdx) - Consolidated troubleshooting information
+
 
 ## Getting Started
 
@@ -114,18 +115,22 @@ hackathon-1/                    # Main project repository
 │   ├── docs/                   # Documentation source files
 │   │   ├── module-1-ros2-fundamentals/    # Module 1: ROS 2 Fundamentals
 │   │   ├── module-1-ros2-communication/   # Module 2: ROS 2 Communication
-│   │   └── module-1-urdf-modeling/        # Module 3: URDF Modeling
+│   │   ├── module-1-urdf-modeling/        # Module 3: URDF Modeling
+│   │   ├── module-2-digital-twin/         # Module 4: Digital Twin (Gazebo & Unity)
+│   │   └── module-3-nvidia-isaac/         # Module 5: AI-Robot Brain (NVIDIA Isaac)
 │   ├── src/                    # Source code for custom components
+│   │   └── components/isaac-examples/     # Isaac-specific React components
 │   ├── static/                 # Static assets (images, files)
 │   ├── docusaurus.config.js    # Docusaurus configuration
 │   └── sidebars.js             # Navigation sidebar configuration
-├── specs/1-ros2-robotics/      # Project specifications and design documents
-│   ├── spec.md                 # Feature specification
-│   ├── plan.md                 # Implementation plan
-│   ├── research.md             # Research findings
-│   ├── data-model.md           # Data model specification
-│   └── tasks.md                # Implementation tasks
+├── specs/                      # Project specifications and design documents
+│   ├── 1-ros2-robotics/        # ROS 2 fundamentals specifications
+│   ├── 2-digital-twin/         # Digital twin specifications
+│   └── 3-nvidia-isaac/         # NVIDIA Isaac specifications
 ├── docs/                       # Documentation source files (mirrored in book-frontend)
+├── history/                    # Prompt History Records and ADRs
+│   ├── prompts/                # Prompt History Records
+│   └── adr/                    # Architecture Decision Records
 └── README.md                   # This file
 ```
 
@@ -153,8 +158,10 @@ The recommended learning path is:
 
 1. **Start with Module 1**: Complete the ROS 2 Fundamentals module to understand core concepts
 2. **Continue with Module 2**: Learn about communication patterns and implementation
-3. **Finish with Module 3**: Apply concepts to URDF modeling for humanoid robots
-4. **Review and practice**: Work through examples and apply concepts to your own projects
+3. **Proceed with Module 3**: Apply concepts to URDF modeling for humanoid robots
+4. **Advance to Module 4**: Explore Digital Twin concepts with Gazebo and Unity simulation
+5. **Deepen with Module 5**: Master AI-Robot integration using NVIDIA Isaac platform
+6. **Review and practice**: Work through examples and apply concepts to your own projects
 
 Each module is designed to be comprehensive and can be studied independently, but following the sequence provides the best learning experience.
 

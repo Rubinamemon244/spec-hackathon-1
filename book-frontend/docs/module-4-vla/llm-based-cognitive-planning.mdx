@@ -1,0 +1,633 @@
+---
+sidebar_position: 2
+title: "LLM-Based Cognitive Planning"
+---
+
+# LLM-Based Cognitive Planning
+
+## Overview
+
+This chapter explores how to leverage Large Language Models (LLMs) for cognitive planning in humanoid robots. We'll learn to translate natural language commands into executable ROS 2 action sequences, enabling robots to understand complex instructions and perform multi-step tasks autonomously.
+
+## Learning Objectives
+
+By the end of this chapter, you will be able to:
+- Integrate LLMs with robotic systems for natural language understanding
+- Parse complex natural language commands into structured robot tasks
+- Implement cognitive planning architectures for humanoid robots
+- Create action sequence generators from high-level goals
+- Design error recovery and fallback mechanisms for LLM-based planning
+
+## Prerequisites
+
+Before starting this chapter, ensure you have:
+- Understanding of ROS 2 action libraries and services
+- Basic knowledge of LLM APIs (OpenAI GPT, Anthropic Claude, or similar)
+- Experience with Python programming and asynchronous operations
+- Familiarity with state machines and behavior trees
+
+## Introduction to Cognitive Planning
+
+Cognitive planning in robotics refers to the ability of a robot to understand high-level goals expressed in natural language and decompose them into executable actions. This capability enables more intuitive human-robot interaction and allows robots to operate in dynamic, unstructured environments.
+
+### Key Components of Cognitive Planning:
+- **Language Understanding**: Interpreting natural language commands
+- **Task Decomposition**: Breaking complex goals into primitive actions
+- **Context Awareness**: Understanding environmental and situational context
+- **Execution Monitoring**: Tracking task progress and handling exceptions
+- **Learning**: Improving planning through experience
+
+## Integrating LLMs with ROS 2 Systems
+
+Large Language Models can serve as the cognitive layer that bridges natural language commands with robotic actions. We'll explore how to connect LLMs to ROS 2 systems.
+
+### Basic LLM Integration Architecture
+
+```python
+import asyncio
+import json
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+from geometry_msgs.msg import PoseStamped
+from action_msgs.msg import GoalStatus
+from llm_interfaces.srv import PlanGeneration
+
+class LLMPolicyNode(Node):
+    def __init__(self):
+        super().__init__('llm_policy_node')
+
+        # Publishers and subscribers
+        self.command_publisher = self.create_publisher(String, '/high_level_commands', 10)
+        self.status_subscriber = self.create_subscription(String, '/robot_status', self.status_callback, 10)
+
+        # Service for generating plans
+        self.plan_service = self.create_service(PlanGeneration, 'generate_plan', self.generate_plan_callback)
+
+        # LLM client initialization
+        self.llm_client = self.initialize_llm_client()
+
+        self.get_logger().info('LLM Policy Node initialized')
+
+    def initialize_llm_client(self):
+        """Initialize connection to LLM service"""
+        # This could be OpenAI API, Anthropic API, or local LLM
+        import openai
+        openai.api_key = self.get_parameter_or('openai_api_key', 'your-api-key-here').value
+        return openai
+
+    def generate_plan_callback(self, request, response):
+        """Generate a plan from natural language command"""
+        try:
+            plan = self.generate_plan_from_command(request.command, request.context)
+            response.plan = json.dumps(plan)
+            response.success = True
+        except Exception as e:
+            response.success = False
+            response.error_message = str(e)
+
+        return response
+
+    def generate_plan_from_command(self, command, context):
+        """Generate executable plan from natural language command"""
+        prompt = f"""
+        Given the following natural language command and context, generate a structured plan for a humanoid robot.
+
+        Command: "{command}"
+        Context: {context}
+
+        Return a JSON object with the following structure:
+        {{
+            "steps": [
+                {{
+                    "action": "action_type",
+                    "parameters": {{}},
+                    "description": "Human-readable description"
+                }}
+            ],
+            "estimated_duration": "seconds",
+            "success_criteria": ["criteria1", "criteria2"]
+        }}
+
+        Available actions:
+        - NAVIGATE_TO_LOCATION: Move to a specific location
+        - GRASP_OBJECT: Pick up an object
+        - PLACE_OBJECT: Place an object at a location
+        - SPEAK: Make the robot speak
+        - DETECT_OBJECT: Look for specific objects
+        - WAIT: Pause execution
+        - PERFORM_ACTION: Execute a predefined robot action (wave, nod, etc.)
+        """
+
+        completion = self.llm_client.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1  # Low temperature for consistent planning
+        )
+
+        plan_json = completion.choices[0].message.content.strip()
+
+        # Clean up potential formatting issues
+        if plan_json.startswith("```json"):
+            plan_json = plan_json[7:]  # Remove ```json
+        if plan_json.endswith("```"):
+            plan_json = plan_json[:-3]  # Remove ```
+
+        return json.loads(plan_json)
+```
+
+## Natural Language Command Parsing
+
+Effective cognitive planning requires robust parsing of natural language commands. Let's implement a system that can handle various command structures.
+
+### Command Grammar and Parsing
+
+```python
+import re
+from typing import Dict, List, Optional
+from dataclasses import dataclass
+
+@dataclass
+class ParsedCommand:
+    intent: str
+    objects: List[str]
+    locations: List[str]
+    quantities: List[int]
+    temporal_constraints: List[str]
+    spatial_relations: List[str]
+
+class NaturalLanguageParser:
+    def __init__(self):
+        self.intent_patterns = {
+            'NAVIGATION': [
+                r'go to (?:the )?(.+)',
+                r'move to (?:the )?(.+)',
+                r'walk to (?:the )?(.+)',
+                r'navigate to (?:the )?(.+)'
+            ],
+            'GRASPING': [
+                r'pick up (?:the )?(.+)',
+                r'grab (?:the )?(.+)',
+                r'take (?:the )?(.+)',
+                r'get (?:the )?(.+)'
+            ],
+            'PLACEMENT': [
+                r'put (?:the )?(.+) (?:on|at) (?:the )?(.+)',
+                r'place (?:the )?(.+) (?:on|at) (?:the )?(.+)',
+                r'drop (?:the )?(.+) (?:on|at) (?:the )?(.+)'
+            ],
+            'MANIPULATION': [
+                r'give (?:the )?(.+) to (.+)',
+                r'bring (?:the )?(.+) to (.+)',
+                r'hand (?:the )?(.+) to (.+)'
+            ],
+            'INFORMATION': [
+                r'tell me about (.+)',
+                r'what is (?:the )?(.+)',
+                r'describe (.+)'
+            ]
+        }
+
+    def parse_command(self, command: str) -> Optional[ParsedCommand]:
+        """Parse a natural language command into structured components"""
+        command_lower = command.lower().strip()
+
+        # Extract intent
+        intent = self._extract_intent(command_lower)
+        if not intent:
+            return None
+
+        # Extract objects, locations, etc.
+        objects = self._extract_objects(command_lower)
+        locations = self._extract_locations(command_lower)
+        quantities = self._extract_quantities(command_lower)
+        temporal_constraints = self._extract_temporal_constraints(command_lower)
+        spatial_relations = self._extract_spacial_relations(command_lower)
+
+        return ParsedCommand(
+            intent=intent,
+            objects=objects,
+            locations=locations,
+            quantities=quantities,
+            temporal_constraints=temporal_constraints,
+            spatial_relations=spatial_relations
+        )
+
+    def _extract_intent(self, command: str) -> Optional[str]:
+        """Extract the intent from the command"""
+        for intent, patterns in self.intent_patterns.items():
+            for pattern in patterns:
+                if re.search(pattern, command):
+                    return intent
+        return None
+
+    def _extract_objects(self, command: str) -> List[str]:
+        """Extract object names from the command"""
+        # Simple extraction - in practice, this would use more sophisticated NLP
+        # For now, we'll extract nouns after certain keywords
+        object_keywords = ['the ', 'a ', 'an ']
+        objects = []
+
+        # This is a simplified version - real implementation would use NER
+        for keyword in object_keywords:
+            matches = re.findall(rf'{keyword}(\w+)', command)
+            objects.extend(matches)
+
+        return objects
+
+    def _extract_locations(self, command: str) -> List[str]:
+        """Extract location names from the command"""
+        location_patterns = [
+            r'(?:to|at|on|in) (?:the )?(\w+)',
+            r'from (\w+) to (\w+)'
+        ]
+
+        locations = []
+        for pattern in location_patterns:
+            matches = re.findall(pattern, command)
+            for match in matches:
+                if isinstance(match, tuple):
+                    locations.extend(list(match))
+                else:
+                    locations.append(match)
+
+        return locations
+```
+
+## Action Sequence Generation
+
+Once we have parsed the command, we need to generate a sequence of executable actions for the robot.
+
+```python
+class ActionSequenceGenerator:
+    def __init__(self):
+        self.action_library = {
+            'NAVIGATE_TO_LOCATION': self._navigate_to_location,
+            'GRASP_OBJECT': self._grasp_object,
+            'PLACE_OBJECT': self._place_object,
+            'SPEAK': self._speak,
+            'DETECT_OBJECT': self._detect_object,
+            'WAIT': self._wait,
+            'PERFORM_ACTION': self._perform_action
+        }
+
+        # Predefined locations in the environment
+        self.location_map = {
+            'kitchen': {'x': 1.0, 'y': 2.0, 'z': 0.0},
+            'living room': {'x': 3.0, 'y': 1.0, 'z': 0.0},
+            'bedroom': {'x': 0.5, 'y': 4.0, 'z': 0.0},
+            'office': {'x': 2.5, 'y': 3.5, 'z': 0.0},
+            'entrance': {'x': 0.0, 'y': 0.0, 'z': 0.0}
+        }
+
+        # Predefined objects and their properties
+        self.object_properties = {
+            'cup': {'grasp_type': 'top_grasp', 'weight': 0.2, 'color': 'blue'},
+            'book': {'grasp_type': 'side_grasp', 'weight': 0.5, 'color': 'red'},
+            'phone': {'grasp_type': 'pinch_grasp', 'weight': 0.1, 'color': 'black'},
+            'bottle': {'grasp_type': 'cylindrical_grasp', 'weight': 0.3, 'color': 'green'}
+        }
+
+    def generate_action_sequence(self, parsed_command: ParsedCommand, context: Dict) -> List[Dict]:
+        """Generate a sequence of actions based on the parsed command"""
+        sequence = []
+
+        if parsed_command.intent == 'NAVIGATION':
+            if parsed_command.locations:
+                target_location = parsed_command.locations[0]
+                sequence.append({
+                    'action': 'NAVIGATE_TO_LOCATION',
+                    'parameters': {'target_location': target_location},
+                    'description': f'Navigate to {target_location}'
+                })
+
+        elif parsed_command.intent == 'GRASPING':
+            if parsed_command.objects:
+                obj = parsed_command.objects[0]
+                sequence.append({
+                    'action': 'NAVIGATE_TO_LOCATION',
+                    'parameters': {'target_location': 'near_' + obj.replace(' ', '_')},
+                    'description': f'Move to position to grasp {obj}'
+                })
+                sequence.append({
+                    'action': 'DETECT_OBJECT',
+                    'parameters': {'object_type': obj},
+                    'description': f'Detect {obj}'
+                })
+                sequence.append({
+                    'action': 'GRASP_OBJECT',
+                    'parameters': {'object_type': obj},
+                    'description': f'Grasp {obj}'
+                })
+
+        elif parsed_command.intent == 'PLACEMENT':
+            if len(parsed_command.objects) >= 1 and len(parsed_command.locations) >= 1:
+                obj = parsed_command.objects[0]
+                location = parsed_command.locations[-1]  # Last location mentioned
+                sequence.append({
+                    'action': 'NAVIGATE_TO_LOCATION',
+                    'parameters': {'target_location': location},
+                    'description': f'Navigate to {location}'
+                })
+                sequence.append({
+                    'action': 'PLACE_OBJECT',
+                    'parameters': {'object_type': obj, 'target_location': location},
+                    'description': f'Place {obj} at {location}'
+                })
+
+        elif parsed_command.intent == 'MANIPULATION':
+            if len(parsed_command.objects) >= 1 and len(parsed_command.locations) >= 1:
+                obj = parsed_command.objects[0]
+                recipient = parsed_command.locations[-1]
+
+                # Grasp the object
+                sequence.append({
+                    'action': 'NAVIGATE_TO_LOCATION',
+                    'parameters': {'target_location': 'near_' + obj.replace(' ', '_')},
+                    'description': f'Move to position to grasp {obj}'
+                })
+                sequence.append({
+                    'action': 'DETECT_OBJECT',
+                    'parameters': {'object_type': obj},
+                    'description': f'Detect {obj}'
+                })
+                sequence.append({
+                    'action': 'GRASP_OBJECT',
+                    'parameters': {'object_type': obj},
+                    'description': f'Grasp {obj}'
+                })
+
+                # Navigate to recipient
+                sequence.append({
+                    'action': 'NAVIGATE_TO_LOCATION',
+                    'parameters': {'target_location': recipient},
+                    'description': f'Navigate to {recipient}'
+                })
+
+                # Place the object
+                sequence.append({
+                    'action': 'PLACE_OBJECT',
+                    'parameters': {'object_type': obj, 'target_location': recipient},
+                    'description': f'Give {obj} to {recipient}'
+                })
+
+        return sequence
+
+    async def execute_action_sequence(self, sequence: List[Dict]):
+        """Execute the action sequence asynchronously"""
+        for i, action_step in enumerate(sequence):
+            self.get_logger().info(f'Executing step {i+1}/{len(sequence)}: {action_step["description"]}')
+
+            action_func = self.action_library.get(action_step['action'])
+            if action_func:
+                try:
+                    await action_func(action_step['parameters'])
+                    self.get_logger().info(f'Step {i+1} completed successfully')
+                except Exception as e:
+                    self.get_logger().error(f'Step {i+1} failed: {str(e)}')
+                    # Implement recovery strategy
+                    return False
+            else:
+                self.get_logger().error(f'Unknown action: {action_step["action"]}')
+                return False
+
+        return True
+```
+
+## Context-Aware Planning
+
+Robots need to consider their current state and environment when executing plans. Let's implement context-aware planning.
+
+```python
+class ContextAwarePlanner:
+    def __init__(self):
+        self.current_state = {
+            'location': 'unknown',
+            'carrying_object': None,
+            'battery_level': 100,
+            'available_manipulators': ['left_arm', 'right_arm'],
+            'perception_data': {}
+        }
+
+        self.memory = {}  # Store learned information about the world
+
+    def update_context(self, new_state: Dict):
+        """Update the current context"""
+        self.current_state.update(new_state)
+
+    def generate_contextual_plan(self, command: str, additional_context: Dict = None) -> List[Dict]:
+        """Generate a plan considering current context"""
+        # Combine current state with additional context
+        full_context = {
+            'current_state': self.current_state,
+            'world_knowledge': self.memory,
+            'additional_context': additional_context or {}
+        }
+
+        # Use LLM to generate context-aware plan
+        prompt = f"""
+        Generate a detailed action plan for the following command, considering the current context:
+
+        Command: "{command}"
+
+        Current Context:
+        - Robot Location: {self.current_state['location']}
+        - Carrying Object: {self.current_state['carrying_object']}
+        - Battery Level: {self.current_state['battery_level']}%
+        - Available Manipulators: {self.current_state['available_manipulators']}
+        - Perception Data: {self.current_state['perception_data']}
+
+        Additional Context: {additional_context}
+
+        Available Actions:
+        - NAVIGATE_TO_LOCATION: Move to a specific location
+        - GRASP_OBJECT: Pick up an object (consider if carrying object)
+        - PLACE_OBJECT: Place an object at a location
+        - SPEAK: Make the robot speak
+        - DETECT_OBJECT: Look for specific objects
+        - WAIT: Pause execution
+        - PERFORM_ACTION: Execute a predefined robot action
+        - CHARGE_BATTERY: Navigate to charging station if battery low
+
+        Generate a JSON plan with steps that account for current state and constraints.
+        """
+
+        # This would call the LLM to generate the plan
+        # For demonstration, we'll return a mock response
+        return self._mock_contextual_plan_generation(prompt)
+
+    def _mock_contextual_plan_generation(self, prompt: str) -> List[Dict]:
+        """Mock implementation - in practice this would call an LLM"""
+        # This is a simplified example - real implementation would use LLM
+        if "low battery" in prompt.lower() or self.current_state['battery_level'] < 20:
+            return [{
+                'action': 'NAVIGATE_TO_LOCATION',
+                'parameters': {'target_location': 'charging_station'},
+                'description': 'Navigate to charging station due to low battery'
+            }, {
+                'action': 'CHARGE_BATTERY',
+                'parameters': {},
+                'description': 'Charge battery'
+            }]
+        else:
+            # Default response - in practice this would come from LLM
+            return [{
+                'action': 'SPEAK',
+                'parameters': {'text': 'I understand the command and will execute it'},
+                'description': 'Acknowledge command'
+            }]
+```
+
+## Error Recovery and Fallback Strategies
+
+LLM-based planning can sometimes generate invalid or impossible plans. We need robust error handling.
+
+```python
+class PlanValidator:
+    def __init__(self):
+        self.known_locations = set(['kitchen', 'living room', 'bedroom', 'office', 'entrance', 'charging_station'])
+        self.known_objects = set(['cup', 'book', 'phone', 'bottle'])
+
+    def validate_plan(self, plan: List[Dict]) -> tuple[bool, List[str]]:
+        """Validate the plan for correctness and feasibility"""
+        errors = []
+
+        for i, step in enumerate(plan):
+            action = step.get('action')
+            params = step.get('parameters', {})
+
+            # Validate action type
+            if action not in ['NAVIGATE_TO_LOCATION', 'GRASP_OBJECT', 'PLACE_OBJECT',
+                            'SPEAK', 'DETECT_OBJECT', 'WAIT', 'PERFORM_ACTION', 'CHARGE_BATTERY']:
+                errors.append(f"Step {i+1}: Unknown action '{action}'")
+
+            # Validate parameters
+            if action == 'NAVIGATE_TO_LOCATION':
+                if 'target_location' not in params:
+                    errors.append(f"Step {i+1}: Missing target_location parameter")
+                elif params['target_location'] not in self.known_locations:
+                    errors.append(f"Step {i+1}: Unknown location '{params['target_location']}'")
+
+            elif action == 'GRASP_OBJECT':
+                if 'object_type' not in params:
+                    errors.append(f"Step {i+1}: Missing object_type parameter")
+                elif params['object_type'] not in self.known_objects:
+                    errors.append(f"Step {i+1}: Unknown object '{params['object_type']}'")
+
+            elif action == 'SPEAK':
+                if 'text' not in params:
+                    errors.append(f"Step {i+1}: Missing text parameter")
+
+        return len(errors) == 0, errors
+
+class RecoveryManager:
+    def __init__(self):
+        self.recovery_strategies = {
+            'LOCATION_NOT_FOUND': self._handle_location_not_found,
+            'OBJECT_NOT_DETECTED': self._handle_object_not_detected,
+            'GRASP_FAILED': self._handle_grasp_failed,
+            'NAVIGATION_FAILED': self._handle_navigation_failed
+        }
+
+    def handle_execution_error(self, error_type: str, context: Dict) -> List[Dict]:
+        """Generate recovery actions based on error type"""
+        strategy = self.recovery_strategies.get(error_type)
+        if strategy:
+            return strategy(context)
+        else:
+            return [{'action': 'SPEAK', 'parameters': {'text': 'I encountered an unexpected error and need assistance'}}]
+
+    def _handle_location_not_found(self, context: Dict) -> List[Dict]:
+        """Handle case where target location is not found"""
+        return [
+            {'action': 'SPEAK', 'parameters': {'text': f"I couldn't find the {context.get('target_location', 'location')}. Could you guide me or specify another location?"}},
+            {'action': 'WAIT', 'parameters': {'duration': 10}}
+        ]
+
+    def _handle_object_not_detected(self, context: Dict) -> List[Dict]:
+        """Handle case where object is not detected"""
+        return [
+            {'action': 'SPEAK', 'parameters': {'text': f"I couldn't find the {context.get('object_type', 'object')}. It might not be in view or may not exist."}},
+            {'action': 'NAVIGATE_TO_LOCATION', 'parameters': {'target_location': 'search_area'}, 'description': 'Move to search area'},
+            {'action': 'DETECT_OBJECT', 'parameters': {'object_type': context.get('object_type')}, 'description': 'Try detecting object again'}
+        ]
+```
+
+## Practical Exercise: LLM-Powered Task Planner
+
+### Objective
+Create an LLM-powered task planner that translates natural language commands into executable robot actions.
+
+### Steps:
+1. Set up LLM integration with ROS 2
+2. Implement command parsing and action sequence generation
+3. Add context awareness to the planning system
+4. Test with various natural language commands
+
+### Expected Outcome
+A system that accepts commands like "Go to the kitchen and bring me the blue cup" and generates appropriate action sequences.
+
+## Advanced Topics in Cognitive Planning
+
+### Hierarchical Task Networks (HTNs)
+For complex tasks, HTNs can break down high-level goals into primitive actions in a structured way:
+
+```python
+class HierarchicalTaskNetwork:
+    def __init__(self):
+        self.task_methods = {
+            'BRING_OBJECT': [
+                # Method 1: Direct approach
+                [
+                    {'action': 'NAVIGATE_TO_LOCATION', 'params': {'target': '?object_loc'}},
+                    {'action': 'GRASP_OBJECT', 'params': {'object': '?object'}},
+                    {'action': 'NAVIGATE_TO_LOCATION', 'params': {'target': '?destination'}},
+                    {'action': 'PLACE_OBJECT', 'params': {'object': '?object', 'location': '?destination'}}
+                ]
+            ],
+            'CLEAN_ROOM': [
+                # Method 1: Systematic cleaning
+                [
+                    {'action': 'GET_CLEANING_SUPPLIES'},
+                    {'action': 'NAVIGATE_TO_LOCATION', 'params': {'target': '?room_start'}},
+                    {'action': 'EXECUTE_CLEANING_PATTERN'},
+                    {'action': 'STOW_CLEANING_SUPPLIES'}
+                ]
+            ]
+        }
+```
+
+### Learning from Demonstration
+Enhance the system by learning from human demonstrations:
+
+```python
+class LearningFromDemonstration:
+    def __init__(self):
+        self.demonstration_memory = []
+
+    def record_demonstration(self, human_command: str, robot_actions: List[Dict]):
+        """Record successful command-action pairs"""
+        self.demonstration_memory.append({
+            'command': human_command,
+            'actions': robot_actions,
+            'success': True
+        })
+
+    def adapt_plan(self, new_command: str, original_plan: List[Dict]) -> List[Dict]:
+        """Adapt plan based on similar past demonstrations"""
+        # Find similar commands in memory
+        similar_demos = [demo for demo in self.demonstration_memory
+                        if self._commands_similar(demo['command'], new_command)]
+
+        if similar_demos:
+            # Adapt the plan based on successful demonstrations
+            return self._adapt_based_on_demonstration(similar_demos[0], original_plan)
+        else:
+            return original_plan
+```
+
+## Summary
+
+LLM-based cognitive planning enables robots to understand and execute complex natural language commands. By combining language understanding with structured action planning, we can create more intuitive and capable robotic systems. The key to success lies in proper validation, error handling, and context awareness to ensure reliable operation.
+
+In the next chapter, we'll combine everything into a capstone project implementing a complete Vision-Language-Action pipeline for autonomous humanoid operation.
