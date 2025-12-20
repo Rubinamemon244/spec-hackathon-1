@@ -31,5 +31,5 @@ Continue to the next section to learn more about creating specific URDF models f
 
 ## Related Topics
 
-- [ROS 2 Fundamentals](../module-1-ros2-fundamentals/index): Understanding ROS 2 basics is important for working with URDF in robotics applications
-- [ROS 2 Communication](../module-1-ros2-communication/index): Learn how URDF models integrate with communication systems in real robots
+- [ROS 2 Fundamentals](../module-1-ros2-fundamentals/): Understanding ROS 2 basics is important for working with URDF in robotics applications
+- [ROS 2 Communication](../module-1-ros2-communication/): Learn how URDF models integrate with communication systems in real robots

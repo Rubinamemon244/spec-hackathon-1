@@ -31,5 +31,5 @@ Continue to the next section to learn more about specific communication patterns
 
 ## Related Topics
 
-- [ROS 2 Fundamentals](../module-1-ros2-fundamentals/index): Review the foundational concepts before diving deeper into communication
-- [URDF Modeling](../module-1-urdf-modeling/index): Understand how to model robots that will use these communication patterns
+- [ROS 2 Fundamentals](../module-1-ros2-fundamentals/): Review the foundational concepts before diving deeper into communication
+- [URDF Modeling](../module-1-urdf-modeling/): Understand how to model robots that will use these communication patterns

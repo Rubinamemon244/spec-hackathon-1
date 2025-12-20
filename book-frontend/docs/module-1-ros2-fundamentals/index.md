@@ -36,4 +36,4 @@ Continue to the next section to learn more about ROS 2 architecture in detail.
 ## Related Topics
 
 - [Communication Patterns](../module-1-ros2-communication/nodes-topics-services): Learn how to implement the communication concepts in practice
-- [URDF Modeling](../module-1-urdf-modeling/index): Understand how to model robots that use these communication patterns
+- [URDF Modeling](../module-1-urdf-modeling/): Understand how to model robots that use these communication patterns

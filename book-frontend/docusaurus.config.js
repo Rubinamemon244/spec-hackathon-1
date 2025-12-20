@@ -127,7 +127,7 @@ const config = {
               },
               {
                 label: 'AI-Robot Brain (NVIDIA Isaac)',
-                to: '/docs/module-2-digital-twin/nvidia-isaac-sim-fundamentals',
+                to: '/docs/module-3-nvidia-isaac/nvidia-isaac-sim-fundamentals',
               },
             ],
           },

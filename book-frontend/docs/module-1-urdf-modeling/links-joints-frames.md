@@ -275,4 +275,4 @@ Links, joints, and frames form the foundation of URDF models. Understanding how 
 
 Continue to learn about hardware mapping and how URDF models connect to real robotic systems.
 
-[← Previous: Module Introduction](./index) | [Next: Hardware Mapping →](./hardware-mapping)
+[← Previous: Module Introduction](./) | [Next: Hardware Mapping →](./hardware-mapping)

@@ -95,10 +95,10 @@ Understanding nodes, topics, and services is fundamental to developing ROS 2 app
 ## Related Topics
 
 - For foundational concepts about ROS 2 architecture, see [Module 1: ROS 2 Fundamentals](../module-1-ros2-fundamentals/architecture)
-- To apply these communication patterns to humanoid robot models, see [Module 3: URDF Modeling](../module-1-urdf-modeling/index)
+- To apply these communication patterns to humanoid robot models, see [Module 3: URDF Modeling](../module-1-urdf-modeling/)
 
 ## Next Steps
 
 Continue to learn about Python rclpy concepts for implementing these communication patterns.
 
-[← Previous: Module Introduction](./index) | [Next: Python rclpy Concepts →](./python-rclpy)
+[← Previous: Module Introduction](./) | [Next: Python rclpy Concepts →](./python-rclpy)

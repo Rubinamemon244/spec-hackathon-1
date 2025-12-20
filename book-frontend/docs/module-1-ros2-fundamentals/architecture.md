@@ -66,11 +66,11 @@ ROS 2's architecture provides a more robust and scalable foundation for robotics
 
 ## Related Topics
 
-- To understand how to implement communication patterns in ROS 2, see [Module 2: ROS 2 Communication](../module-1-ros2-communication/index)
-- For practical applications of ROS 2 architecture in humanoid robot modeling, see [Module 3: URDF Modeling](../module-1-urdf-modeling/index)
+- To understand how to implement communication patterns in ROS 2, see [Module 2: ROS 2 Communication](../module-1-ros2-communication/)
+- For practical applications of ROS 2 architecture in humanoid robot modeling, see [Module 3: URDF Modeling](../module-1-urdf-modeling/)
 
 ## Next Steps
 
 Continue to the next section to learn more about ROS 2's role in embodied intelligence systems.
 
-[← Previous: Module Introduction](./index) | [Next: ROS 2 in Embodied Intelligence →](./embodied-intelligence)
+[← Previous: Module Introduction](./) | [Next: ROS 2 in Embodied Intelligence →](./embodied-intelligence)
