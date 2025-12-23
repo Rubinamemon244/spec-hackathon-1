@@ -20,7 +20,7 @@ const config = {
   },
 
   // Set the production url of your site here
-  url: 'https://speckit-hackathon-1.vercel.app/',
+  url: 'https://vercel.com/rubina-memons-projects/spec-hackathon-1',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
