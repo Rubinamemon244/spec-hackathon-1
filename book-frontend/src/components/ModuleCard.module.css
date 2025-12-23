@@ -1,0 +1,179 @@
+/**
+ * CSS module for ModuleCard component
+ */
+
+.moduleCard {
+  background-color: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-global-radius);
+  overflow: hidden;
+  transition: all var(--ifm-transition-fast) ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.moduleCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ifm-global-shadow-lw);
+  border-color: var(--ifm-color-primary);
+}
+
+.moduleCardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.moduleCardContent {
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.moduleCardIcon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--ifm-color-primary);
+}
+
+.moduleCardCategory {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--ifm-color-primary-lightest);
+  border-radius: var(--ifm-global-radius);
+  align-self: flex-start;
+}
+
+.moduleCardTitle {
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  color: var(--ifm-heading-color);
+}
+
+.moduleCardDescription {
+  margin-bottom: 1rem;
+  color: var(--ifm-color-content-secondary);
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.moduleCardLevel {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--ifm-global-radius);
+  margin-bottom: 1rem;
+  align-self: flex-start;
+}
+
+.levelBeginner {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.levelIntermediate {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.levelAdvanced {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.moduleCardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.moduleCardTag {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--ifm-color-emphasis-100);
+  border-radius: var(--ifm-global-radius);
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Variants */
+.moduleCard.variant-primary {
+  border-left: 4px solid var(--ifm-color-primary);
+}
+
+.moduleCard.variant-secondary {
+  border-left: 4px solid var(--ifm-color-secondary);
+}
+
+/* Highlighted state */
+.moduleCard.highlighted {
+  border: 2px solid var(--ifm-color-primary);
+  position: relative;
+}
+
+.moduleCard.highlighted::before {
+  content: 'Featured';
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background-color: var(--ifm-color-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--ifm-global-radius);
+  transform: rotate(5deg);
+  z-index: 1;
+}
+
+/* Responsive design */
+@media (max-width: 996px) {
+  .moduleCardContent {
+    padding: 1.25rem;
+  }
+
+  .moduleCardTitle {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .moduleCardContent {
+    padding: 1rem;
+  }
+
+  .moduleCardTitle {
+    font-size: 1rem;
+  }
+
+  .moduleCardIcon {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Animation for entrance */
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.moduleCard {
+  animation: cardFadeIn 0.4s ease-out;
+}

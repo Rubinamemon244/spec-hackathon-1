@@ -1,0 +1,250 @@
+/**
+ * CSS module for SectionHeader component
+ */
+
+.sectionHeader {
+  width: 100%;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.sectionHeader.withDivider {
+  margin-bottom: 3rem;
+}
+
+.sectionHeader.withDivider::after {
+  content: '';
+  position: absolute;
+  bottom: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 200px;
+  height: 3px;
+  background-color: var(--ifm-color-primary);
+  border-radius: 2px;
+}
+
+.sectionHeader.align-left {
+  text-align: left;
+}
+
+.sectionHeader.align-left.withDivider::after {
+  left: 0;
+  transform: translateX(0);
+}
+
+.sectionHeader.align-right {
+  text-align: right;
+}
+
+.sectionHeader.align-right.withDivider::after {
+  left: auto;
+  right: 0;
+  transform: translateX(0);
+}
+
+.sectionHeader.align-center {
+  text-align: center;
+}
+
+.sectionHeaderContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.sectionHeader.align-center .sectionHeaderContent {
+  align-items: center;
+}
+
+.sectionHeader.align-right .sectionHeaderContent {
+  align-items: flex-end;
+}
+
+.sectionHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.sectionSubtitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ifm-heading-color);
+  line-height: 1.3;
+}
+
+.sectionDescription {
+  font-size: 1.1rem;
+  color: var(--ifm-color-content-secondary);
+  margin: 0;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+.sectionIcon {
+  font-size: 2rem;
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.sectionIcon.iconPosition-right {
+  order: 1;
+  margin-left: 1rem;
+  margin-bottom: 0;
+}
+
+.sectionIcon.iconPosition-left {
+  margin-right: 1rem;
+  margin-bottom: 0;
+}
+
+.sectionIcon.iconPosition-top {
+  margin-bottom: 0.5rem;
+  align-self: center;
+}
+
+.sectionDivider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--ifm-color-emphasis-300);
+  margin-top: 2rem;
+}
+
+/* Size variations */
+.sectionHeader.size-small .sectionTitle {
+  font-size: 1.5rem;
+}
+
+.sectionHeader.size-small .sectionDescription {
+  font-size: 1rem;
+}
+
+.sectionHeader.size-large .sectionTitle {
+  font-size: 2.5rem;
+}
+
+.sectionHeader.size-large .sectionDescription {
+  font-size: 1.25rem;
+}
+
+/* Variant variations */
+.sectionHeader.variant-primary .sectionSubtitle {
+  color: var(--ifm-color-primary);
+}
+
+.sectionHeader.variant-primary .sectionTitle {
+  color: var(--ifm-color-primary);
+}
+
+.sectionHeader.variant-secondary .sectionSubtitle {
+  color: var(--ifm-color-secondary);
+}
+
+.sectionHeader.variant-secondary .sectionTitle {
+  color: var(--ifm-color-secondary);
+}
+
+/* Responsive design */
+@media (max-width: 996px) {
+  .sectionHeader.withDivider::after {
+    max-width: 150px;
+  }
+
+  .sectionTitle {
+    font-size: 1.75rem;
+  }
+
+  .sectionHeader.size-large .sectionTitle {
+    font-size: 2.25rem;
+  }
+
+  .sectionHeader.size-small .sectionTitle {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sectionHeader {
+    margin-bottom: 1.5rem;
+  }
+
+  .sectionHeader.withDivider {
+    margin-bottom: 2.5rem;
+  }
+
+  .sectionHeader.withDivider::after {
+    max-width: 100px;
+    bottom: -0.75rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .sectionHeader.size-large .sectionTitle {
+    font-size: 2rem;
+  }
+
+  .sectionDescription {
+    font-size: 1rem;
+  }
+
+  .sectionContent {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .sectionIcon.iconPosition-left,
+  .sectionIcon.iconPosition-right {
+    margin: 0 0 0.5rem 0;
+    order: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .sectionHeader.withDivider::after {
+    max-width: 80px;
+  }
+
+  .sectionTitle {
+    font-size: 1.375rem;
+  }
+
+  .sectionHeader.size-large .sectionTitle {
+    font-size: 1.75rem;
+  }
+
+  .sectionSubtitle {
+    font-size: 0.75rem;
+  }
+}
+
+/* Animation for entrance */
+@keyframes headerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sectionHeader {
+  animation: headerFadeIn 0.4s ease-out;
+}

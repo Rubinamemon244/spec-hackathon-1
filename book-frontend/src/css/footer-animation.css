@@ -1,0 +1,151 @@
+/**
+ * Custom footer hover animations and glow effects
+ * Compatible with Docusaurus footer styling
+ */
+
+/* Footer container hover effect */
+.footer {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.footer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 -4px 20px rgba(0, 123, 255, 0.15);
+}
+
+/* Subtle top border animation */
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.5), transparent);
+  transform: translateY(-10px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.footer:hover::before {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Footer copyright text hover effects */
+.footer__copyright {
+  transition: all 0.3s ease;
+  padding: 1rem 0;
+  position: relative;
+}
+
+.footer:hover .footer__copyright {
+  color: #ffffff;
+}
+
+/* Glow effect for the entire copyright text */
+.footer__copyright {
+  transition: color 0.3s ease;
+}
+
+.footer:hover .footer__copyright {
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.3),
+    0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Target the specific text "Rubina Memon" using CSS string matching */
+/* Since we can't wrap it in a span directly, we'll enhance the entire text */
+.footer__copyright {
+  position: relative;
+}
+
+/* Create a pseudo-element for the glow effect around the name */
+.footer__copyright::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: transparent;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.footer:hover .footer__copyright::after {
+  background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.5), transparent);
+  opacity: 1;
+}
+
+/* Alternative: Use CSS to highlight the name part using text effects */
+.footer__copyright {
+  background: linear-gradient(90deg, transparent 40%, rgba(0, 123, 255, 0.1) 50%, transparent 60%);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.3s ease;
+  background-position: left center;
+  padding: 0.5rem 0;
+}
+
+.footer:hover .footer__copyright {
+  background-size: 100% 100%;
+}
+
+/* Smooth transition for all footer elements */
+.footer * {
+  transition: color 0.2s ease, transform 0.2s ease, text-shadow 0.3s ease;
+}
+
+/* Enhanced hover effect for the entire footer */
+.footer {
+  will-change: transform;
+}
+
+.footer:hover {
+  will-change: transform;
+}
+
+/* Subtle glow effect on the footer bottom */
+.footer__bottom {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.footer:hover .footer__bottom {
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 123, 255, 0.05) 100%);
+}
+
+/* Special effect for the emoji part */
+.footer__copyright {
+  line-height: 1.6;
+}
+
+/* Add a subtle glow to the emoji part specifically */
+.footer__copyright:hover {
+  animation: subtleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes subtleGlow {
+  from {
+    text-shadow:
+      0 0 2px rgba(0, 123, 255, 0.2);
+  }
+  to {
+    text-shadow:
+      0 0 6px rgba(0, 123, 255, 0.4),
+      0 0 8px rgba(0, 123, 255, 0.2);
+  }
+}
+
+/* Smooth transitions for footer links as well */
+.footer__link-item {
+  transition: all 0.2s ease;
+}
+
+.footer__link-item:hover {
+  transform: translateY(-1px);
+  color: var(--ifm-color-primary-light);
+}

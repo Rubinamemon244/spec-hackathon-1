@@ -1,32 +1,108 @@
 /**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
+ * CSS module for HomepageModulesGrid component
  */
 
-.heroBanner {
-  padding: 4rem 0;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, #667eea 100%);
-  color: white;
+.modulesGridSection {
+  padding: 3rem 0;
+  width: 100%;
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
+.modulesGridHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.modulesGridTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--ifm-heading-color);
+  line-height: 1.2;
+}
+
+.modulesGridDescription {
+  font-size: 1.2rem;
+  color: var(--ifm-color-content-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.modulesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Responsive grid layout */
+@media (max-width: 1024px) {
+  .modulesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 800px;
   }
 }
 
-.buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+@media (max-width: 768px) {
+  .modulesGrid {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    gap: 1.5rem;
+  }
+
+  .modulesGridHeader {
+    margin-bottom: 2rem;
+  }
+
+  .modulesGridTitle {
+    font-size: 2rem;
+  }
+
+  .modulesGridDescription {
+    font-size: 1.1rem;
+  }
 }
 
-/* Course introduction styles */
+@media (max-width: 480px) {
+  .modulesGrid {
+    padding: 0 0.5rem;
+    gap: 1rem;
+  }
+
+  .modulesGridTitle {
+    font-size: 1.75rem;
+  }
+}
+
+/* Animation for grid items */
+.modulesGridItem {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.modulesGridItem:nth-child(1) { animation-delay: 0.1s; }
+.modulesGridItem:nth-child(2) { animation-delay: 0.2s; }
+.modulesGridItem:nth-child(3) { animation-delay: 0.3s; }
+.modulesGridItem:nth-child(4) { animation-delay: 0.4s; }
+.modulesGridItem:nth-child(5) { animation-delay: 0.5s; }
+.modulesGridItem:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Course introduction section */
 .courseIntroduction {
   padding: 4rem 0;
   text-align: center;
@@ -53,7 +129,7 @@
   font-weight: 600;
 }
 
-/* Call to action styles */
+/* Call to action section */
 .callToActionSection {
   padding: 4rem 0;
   text-align: center;

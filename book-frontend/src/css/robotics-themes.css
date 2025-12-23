@@ -1,0 +1,310 @@
+/* Robotics-inspired color themes for Docusaurus */
+
+/* Dark AI Lab Theme */
+:root[data-theme='dark-ai-lab'] {
+  /* Primary colors - Electric Blue/Cyan */
+  --ifm-color-primary: #00eeff;
+  --ifm-color-primary-dark: #00ccff;
+  --ifm-color-primary-darker: #00aaff;
+  --ifm-color-primary-darkest: #0077ff;
+  --ifm-color-primary-light: #33f3ff;
+  --ifm-color-primary-lighter: #66f8ff;
+  --ifm-color-primary-lightest: #99fdff;
+
+  /* Background colors - Near-black/charcoal */
+  --ifm-background-color: #0a0a0f;
+  --ifm-background-surface-color: #1a1a2e;
+  --ifm-navbar-background-color: #0f0f1a;
+  --ifm-footer-background-color: #0f0f1a;
+
+  /* Text colors - High contrast white/light gray */
+  --ifm-color-content: #ffffff;
+  --ifm-color-content-secondary: #e0e0e0;
+  --ifm-heading-color: #ffffff;
+
+  /* Border and separator colors */
+  --ifm-color-emphasis-300: #444455;
+  --ifm-color-emphasis-500: #8888aa;
+
+  /* Code block colors */
+  --ifm-code-background: #1a1a2e;
+  --ifm-pre-background: #1a1a2e;
+
+  /* Admonition colors */
+  --ifm-color-info: #00aaff;
+  --ifm-color-success: #00cc7a;
+  --ifm-color-warning: #ffaa00;
+  --ifm-color-danger: #ff4455;
+}
+
+/* Robotics Steel Theme */
+:root[data-theme='robotics-steel'] {
+  /* Primary colors - Neon Green/Teal */
+  --ifm-color-primary: #00ff9d;
+  --ifm-color-primary-dark: #00cc7e;
+  --ifm-color-primary-darker: #00aa66;
+  --ifm-color-primary-darkest: #008852;
+  --ifm-color-primary-light: #33ffae;
+  --ifm-color-primary-lighter: #66ffc0;
+  --ifm-color-primary-lightest: #99ffd1;
+
+  /* Background colors - Cool gray */
+  --ifm-background-color: #2a2f3b;
+  --ifm-background-surface-color: #3a404d;
+  --ifm-navbar-background-color: #303542;
+  --ifm-footer-background-color: #303542;
+
+  /* Text colors - Light gray with high contrast */
+  --ifm-color-content: #f0f2f5;
+  --ifm-color-content-secondary: #d0d4d9;
+  --ifm-heading-color: #ffffff;
+
+  /* Border and separator colors */
+  --ifm-color-emphasis-300: #5a6270;
+  --ifm-color-emphasis-500: #8a92a0;
+
+  /* Code block colors */
+  --ifm-code-background: #3a404d;
+  --ifm-pre-background: #3a404d;
+
+  /* Admonition colors */
+  --ifm-color-info: #00aaff;
+  --ifm-color-success: #00ff9d;
+  --ifm-color-warning: #ffcc00;
+  --ifm-color-danger: #ff6b6b;
+}
+
+/* Neural Horizon Theme */
+:root[data-theme='neural-horizon'] {
+  /* Primary colors - Purple/Soft Orange */
+  --ifm-color-primary: #9d4edd;
+  --ifm-color-primary-dark: #7d3cb8;
+  --ifm-color-primary-darker: #6a339e;
+  --ifm-color-primary-darkest: #52287a;
+  --ifm-color-primary-light: #b26ce2;
+  --ifm-color-primary-lighter: #c78be7;
+  --ifm-color-primary-lightest: #dbaaec;
+
+  /* Secondary accent - Soft Orange */
+  --ifm-color-secondary-accent: #f49f69;
+  --ifm-color-secondary-accent-dark: #e07c46;
+  --ifm-color-secondary-accent-light: #f7b88c;
+
+  /* Background colors - Midnight blue */
+  --ifm-background-color: #0f0f23;
+  --ifm-background-surface-color: #1b1b3a;
+  --ifm-navbar-background-color: #14142e;
+  --ifm-footer-background-color: #14142e;
+
+  /* Text colors - White with purple/blue tint */
+  --ifm-color-content: #f0f4ff;
+  --ifm-color-content-secondary: #c0c8e0;
+  --ifm-heading-color: #ffffff;
+
+  /* Border and separator colors */
+  --ifm-color-emphasis-300: #4a4a6a;
+  --ifm-color-emphasis-500: #7a7a9a;
+
+  /* Code block colors */
+  --ifm-code-background: #1b1b3a;
+  --ifm-pre-background: #1b1b3a;
+
+  /* Admonition colors */
+  --ifm-color-info: #4d9de0;
+  --ifm-color-success: #52c41a;
+  --ifm-color-warning: #f49f69;
+  --ifm-color-danger: #ff7875;
+}
+
+/* Theme-specific overrides for better visual consistency */
+[data-theme='dark-ai-lab'] {
+  --ifm-button-background-color: var(--ifm-color-primary);
+  --ifm-button-color: #000000;
+  --ifm-toc-border-color: #444455;
+}
+
+[data-theme='robotics-steel'] {
+  --ifm-button-background-color: var(--ifm-color-primary);
+  --ifm-button-color: #000000;
+  --ifm-toc-border-color: #5a6270;
+}
+
+[data-theme='neural-horizon'] {
+  --ifm-button-background-color: var(--ifm-color-primary);
+  --ifm-button-color: #ffffff;
+  --ifm-toc-border-color: #4a4a6a;
+}
+
+/* Accessibility improvements for all themes */
+[data-theme='dark-ai-lab'],
+[data-theme='robotics-steel'],
+[data-theme='neural-horizon'] {
+  /* Ensure sufficient contrast ratios */
+  --ifm-color-emphasis-0: var(--ifm-background-color);
+  --ifm-color-emphasis-100: var(--ifm-background-surface-color);
+  --ifm-color-emphasis-900: var(--ifm-color-content);
+  --ifm-color-emphasis-1000: var(--ifm-heading-color);
+
+  /* Focus indicators */
+  --ifm-color-primary-contrast-background: var(--ifm-color-content);
+  --ifm-color-primary-contrast-foreground: var(--ifm-background-color);
+}
+
+/* High contrast mode support for all themes */
+@media (prefers-contrast: high) {
+  [data-theme='dark-ai-lab'],
+  [data-theme='robotics-steel'],
+  [data-theme='neural-horizon'] {
+    --ifm-color-emphasis-300: #ffffff;
+    --ifm-color-emphasis-700: #000000;
+    border-width: 2px !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='dark-ai-lab'],
+  [data-theme='robotics-steel'],
+  [data-theme='neural-horizon'] {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Quantum Cyberpunk Theme */
+:root[data-theme='quantum-cyberpunk'] {
+  /* Primary colors - Vibrant neon pink/purple */
+  --ifm-color-primary: #ff00ff;
+  --ifm-color-primary-dark: #cc00cc;
+  --ifm-color-primary-darker: #aa00aa;
+  --ifm-color-primary-darkest: #880088;
+  --ifm-color-primary-light: #ff33ff;
+  --ifm-color-primary-lighter: #ff66ff;
+  --ifm-color-primary-lightest: #ff99ff;
+
+  /* Secondary colors - Electric lime green */
+  --ifm-color-secondary: #39ff14;
+  --ifm-color-secondary-dark: #29b30e;
+  --ifm-color-secondary-darker: #22990c;
+  --ifm-color-secondary-darkest: #1a7a09;
+  --ifm-color-secondary-light: #63ff45;
+  --ifm-color-secondary-lighter: #8cff76;
+  --ifm-color-secondary-lightest: #b6ffb7;
+
+  /* Background colors - Deep space black */
+  --ifm-background-color: #000011;
+  --ifm-background-surface-color: #0a0a22;
+  --ifm-navbar-background-color: #000022;
+  --ifm-footer-background-color: #000022;
+
+  /* Text colors - Bright white with neon accents */
+  --ifm-color-content: #f0f0ff;
+  --ifm-color-content-secondary: #d0d0ff;
+  --ifm-heading-color: #ffffff;
+
+  /* Border and separator colors - Neon purple */
+  --ifm-color-emphasis-300: #6a0dad;
+  --ifm-color-emphasis-500: #9370db;
+
+  /* Code block colors */
+  --ifm-code-background: #0a0a22;
+  --ifm-pre-background: #0a0a22;
+
+  /* Admonition colors */
+  --ifm-color-info: #00ffff;
+  --ifm-color-success: #39ff14;
+  --ifm-color-warning: #ffff00;
+  --ifm-color-danger: #ff4444;
+}
+
+/* Biomechanical Theme */
+:root[data-theme='biomechanical'] {
+  /* Primary colors - Metallic copper/bronze */
+  --ifm-color-primary: #b87333;
+  --ifm-color-primary-dark: #8b5a2b;
+  --ifm-color-primary-darker: #6b4521;
+  --ifm-color-primary-darkest: #4a3017;
+  --ifm-color-primary-light: #cd853f;
+  --ifm-color-primary-lighter: #d2b48c;
+  --ifm-color-primary-lightest: #e6c9a8;
+
+  /* Secondary colors - Bio-neon green */
+  --ifm-color-secondary: #7fff00;
+  --ifm-color-secondary-dark: #5dbf00;
+  --ifm-color-secondary-darker: #4aa700;
+  --ifm-color-secondary-darkest: #378a00;
+  --ifm-color-secondary-light: #a3ff45;
+  --ifm-color-secondary-lighter: #c1ff80;
+  --ifm-color-secondary-lightest: #daffba;
+
+  /* Background colors - Organic dark gray with bio undertones */
+  --ifm-background-color: #1a1a1a;
+  --ifm-background-surface-color: #2a2a2a;
+  --ifm-navbar-background-color: #222222;
+  --ifm-footer-background-color: #222222;
+
+  /* Text colors - Organic cream with metallic hints */
+  --ifm-color-content: #f5f5dc;
+  --ifm-color-content-secondary: #e0e0c0;
+  --ifm-heading-color: #fdfd96;
+
+  /* Border and separator colors - Metallic bronze */
+  --ifm-color-emphasis-300: #8b4513;
+  --ifm-color-emphasis-500: #a0522d;
+
+  /* Code block colors */
+  --ifm-code-background: #2a2a2a;
+  --ifm-pre-background: #2a2a2a;
+
+  /* Admonition colors */
+  --ifm-color-info: #1e90ff;
+  --ifm-color-success: #7fff00;
+  --ifm-color-warning: #ffa500;
+  --ifm-color-danger: #ff6347;
+}
+
+/* Theme-specific overrides for additional themes */
+[data-theme='quantum-cyberpunk'] {
+  --ifm-button-background-color: var(--ifm-color-primary);
+  --ifm-button-color: #ffffff;
+  --ifm-toc-border-color: #6a0dad;
+}
+
+[data-theme='biomechanical'] {
+  --ifm-button-background-color: var(--ifm-color-primary);
+  --ifm-button-color: #ffffff;
+  --ifm-toc-border-color: #8b4513;
+}
+
+/* Accessibility improvements for additional themes */
+[data-theme='quantum-cyberpunk'],
+[data-theme='biomechanical'] {
+  /* Ensure sufficient contrast ratios */
+  --ifm-color-emphasis-0: var(--ifm-background-color);
+  --ifm-color-emphasis-100: var(--ifm-background-surface-color);
+  --ifm-color-emphasis-900: var(--ifm-color-content);
+  --ifm-color-emphasis-1000: var(--ifm-heading-color);
+
+  /* Focus indicators */
+  --ifm-color-primary-contrast-background: var(--ifm-color-content);
+  --ifm-color-primary-contrast-foreground: var(--ifm-background-color);
+}
+
+/* High contrast mode support for additional themes */
+@media (prefers-contrast: high) {
+  [data-theme='quantum-cyberpunk'],
+  [data-theme='biomechanical'] {
+    --ifm-color-emphasis-300: #ffffff;
+    --ifm-color-emphasis-700: #000000;
+    border-width: 2px !important;
+  }
+}
+
+/* Reduced motion support for additional themes */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='quantum-cyberpunk'],
+  [data-theme='biomechanical'] {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -27,7 +27,7 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'your-org', // Usually your GitHub org/user name.
+  organizationName: 'Rubinamemon244', // Usually your GitHub org/user name.
   projectName: 'hackathon-1', // Usually your repo name.
 
   onBrokenLinks: 'throw',
@@ -68,7 +68,11 @@ const config = {
           onUntruncatedBlogPosts: 'warn',
         },
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: [
+            './src/css/custom.css',
+            './src/css/robotics-themes.css',
+            './src/css/footer-animation.css'
+          ],
         },
       }),
     ],
@@ -97,7 +101,12 @@ const config = {
           },
           {to: '/blog', label: 'Blog', position: 'left'},
           {
-            href: 'https://github.com/your-org/hackathon-1',
+            to: '/robotics-themes',
+            label: 'Themes',
+            position: 'right',
+          },
+          {
+            href: 'https://github.com/Rubinamemon244/hackathon-1',
             label: 'GitHub',
             position: 'right',
           },
@@ -157,12 +166,12 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/your-org/hackathon-1',
+                href: 'https://github.com/Rubinamemon244/hackathon-1',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} ROS 2 for Humanoid Robotics Education. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} ROS 2 for Humanoid Robotics Education. Built by Rubina Memon 💙🤖`,
       },
       prism: {
         theme: prismThemes.github,
